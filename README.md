@@ -1,1 +1,1 @@
-# Batchelor-project
+# Bachelor-project
