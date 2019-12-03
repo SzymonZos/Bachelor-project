@@ -1,0 +1,22 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/Matrix.h
+cstdint
+-
+iostream
+-
+fstream
+-
+
+D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/main.cpp
+iostream
+-
+Matrix.h
+D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/Matrix.h
+

@@ -1,0 +1,4 @@
+D:\Programy\JetBrains\apps\CLion\ch-0\193.5233.103\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - MinGW Makefiles" D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC
+-- Configuring done
+-- Generating done
+-- Build files have been written to: D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/cmake-build-debug
