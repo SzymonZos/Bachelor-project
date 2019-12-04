@@ -7,9 +7,11 @@ void CMatrix::Add(const CMatrix &m)
 	    throw invalid_argument("Add: Mismatch of matrices' dimensions");
 	}
 
-	for (uint32_t i = 0; i < rows; i++)
-		for (uint32_t j = 0; j < columns; j++)
-			matrix[i][j] += m.matrix[i][j];
+	for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] += m.matrix[i][j];
+        }
+    }
 }
 
 void CMatrix::Sub(const CMatrix &m)
@@ -18,49 +20,60 @@ void CMatrix::Sub(const CMatrix &m)
 	    throw invalid_argument("Sub: Mismatch of matrices' dimensions");
 	}
 
-	for (uint32_t i = 0; i < rows; i++)
-		for (uint32_t j = 0; j < columns; j++)
-			matrix[i][j] -= m.matrix[i][j];
+	for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] -= m.matrix[i][j];
+        }
+    }
 }
 
 CMatrix CMatrix::Mul(const CMatrix &m) const
 {
-	if (this->columns != m.rows) {
+	if (columns != m.rows) {
 	    throw invalid_argument("Mul: Mismatch of matrices' dimensions");
 	}
 
-	CMatrix ProductMatrix(this->rows, m.columns);
-	for (uint32_t i = 0; i < ProductMatrix.rows; i++)
-		for (uint32_t j = 0; j < ProductMatrix.columns; j++)
-			for (uint32_t k = 0; k < this->columns; k++)
-				ProductMatrix.matrix[i][j] += (this->matrix[i][k] * m.matrix[k][j]);
-	return ProductMatrix;
+	CMatrix productMatrix(rows, m.columns);
+	for (uint32_t i = 0; i < productMatrix.rows; i++) {
+        for (uint32_t j = 0; j < productMatrix.columns; j++) {
+            for (uint32_t k = 0; k < columns; k++) {
+                productMatrix.matrix[i][j] += (matrix[i][k] * m.matrix[k][j]);
+            }
+        }
+    }
+	return productMatrix;
 }
 
 void CMatrix::Mul(const double &scalar)
 {
-	for (uint32_t i = 0; i < rows; i++)
-		for (uint32_t j = 0; j < columns; j++)
-			matrix[i][j] *= scalar;
+	for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] *= scalar;
+        }
+    }
 }
 
 void CMatrix::Div(const double &scalar)
 {
-	if (scalar == 0) throw invalid_argument("Div: Cannot divide by 0");
+	if (scalar == 0) {
+	    throw invalid_argument("Div: Cannot divide by 0");
+	}
 
-	for (uint32_t i = 0; i < rows; i++)
-		for (uint32_t j = 0; j < columns; j++)
-			matrix[i][j] /= scalar;
+	for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] /= scalar;
+        }
+    }
 }
 
 CMatrix::CMatrix(uint32_t rows, uint32_t columns) : rows(rows), columns(columns) //!< Konstruktor pustej macierzy
 {
-	matrix = new double *[rows]; //!< Tworzê wektor.
-	for (uint32_t i = 0; i<rows; i++) {
+	matrix = new double*[rows]; //!< Tworzê wektor.
+	for (uint32_t i = 0; i < rows; i++) {
 		matrix[i] = new double[columns]; //!< WskaŸnik wskaŸnika, tablica 2D, czyli macierz.
 	}
 	for (uint32_t i = 0; i < rows; i++) {
-		for (uint32_t j = 0; j<columns; j++) {
+		for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = 0; //!< Zerujê elementy tablicy.
         }
 	}
@@ -68,11 +81,11 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns) : rows(rows), columns(columns)
 
 CMatrix::CMatrix(uint32_t rows, uint32_t columns, double **mat) : rows(rows), columns(columns) //!< Konstruktor nadaj¹cy macierzy w klasie wartoœæ ró¿n¹ od zera.
 {
-	matrix = new double *[rows];
-	for (uint32_t i = 0; i<rows; i++) {
+	matrix = new double*[rows];
+	for (uint32_t i = 0; i < rows; i++) {
 		matrix[i] = new double[columns];
 	}
-	for (uint32_t i = 0; i<rows; i++) {
+	for (uint32_t i = 0; i < rows; i++) {
 		for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = mat[i][j]; //!< Do macierzy z klasy zostaje przypisana macierz mat.
         }
@@ -81,13 +94,13 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, double **mat) : rows(rows), co
 
 CMatrix::CMatrix(uint32_t rows, uint32_t columns, double *mat) : rows(rows), columns(columns) //!< Zapisanie wektora jako macierz.
 {
-	matrix = new double *[rows];
+	matrix = new double*[rows];
 	for (uint32_t i = 0; i < rows; i++) {
 		matrix[i] = new double[columns];
 	}
 	for (uint32_t i = 0; i < rows; i++) {
 		for (uint32_t j = 0; j < columns; j++) {
-			matrix[i][j] = mat[i*columns+j]; //!< Przyjmujê, ¿e wektor jest "poziomy" => ma jeden wers i n kolumn. i==0 pierwsze wyrazy mat, i==1 od miejsca zakoñczenia.
+			matrix[i][j] = mat[i * columns + j]; //!< Przyjmujê, ¿e wektor jest "poziomy" => ma jeden wers i n kolumn. i==0 pierwsze wyrazy mat, i==1 od miejsca zakoñczenia.
 		}
 	}
 }
@@ -95,10 +108,10 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, double *mat) : rows(rows), col
 CMatrix::CMatrix(const CMatrix & M) : rows(M.rows), columns(M.columns) //!< Konstruktor kopiuj¹cy
 {
 	matrix = new double *[rows];
-	for (uint32_t i = 0; i<rows; i++) {
+	for (uint32_t i = 0; i < rows; i++) {
 		matrix[i] = new double[columns];
 	}
-	for (uint32_t i = 0; i<rows; i++) {
+	for (uint32_t i = 0; i < rows; i++) {
 		for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = M.matrix[i][j];
         }
@@ -200,9 +213,7 @@ CMatrix &CMatrix::operator -= (const CMatrix &m) //!< Analogicznie jak -
 
 CMatrix CMatrix::operator * (const CMatrix &m) const //!< Mno¿enie macierzy.
 {
-	CMatrix mat(*this);
-	mat = this->Mul(m); //!< Ró¿nica w porównaniu do dodawania i odejmowania polega na tym, ¿e metoda mno¿¹ca macierze zwraca macierz (dodawanie i odejmowanie to void).
-	return mat;
+	return this->Mul(m);
 }
 
 CMatrix &CMatrix::operator *= (const CMatrix &m)
@@ -242,9 +253,11 @@ CMatrix CMatrix::operator -() const //!< Mno¿enie przez skalar o wartoœci -1, mo
 CMatrix CMatrix::T() const //!< Transpozycja macierzy. 
 {
 	CMatrix matrix_t(columns, rows);
-	for (uint32_t i = 0; i < rows; i++)
-		for (uint32_t j = 0; j < columns; j++)
-			matrix_t.matrix[j][i]=matrix[i][j];
+	for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix_t.matrix[j][i] = matrix[i][j];
+        }
+    }
 	return matrix_t;
 }
 
@@ -284,9 +297,17 @@ CVector CVector::Tv() const
 CVector &CVector::operator = (const CMatrix &m) //!< Jako, ¿e wartoœæ macierzy w klasie przechowywana jest w polu private, muszê uzyskaæ o niej informacje za pomoc¹ metod publicznych.
 {
 	uint32_t rows, columns;
-	m.GetSize(rows, columns);
-	for (uint32_t i = 0; i < columns; i++)
-		matrix[0][i] = m.GetElement(0, i);
+    m.GetSize(rows, columns);
+    if (rows == 1) {
+        for (uint32_t i = 0; i < columns; i++) {
+            matrix[0][i] = m.GetElement(0, i);
+        }
+    }
+    else {
+        for (uint32_t i = 0; i < rows; i++) {
+            matrix[i][0] = m.GetElement(i, 0);
+        }
+    }
 	return *this;
 }
 

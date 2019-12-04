@@ -1,8 +1,8 @@
 #include <iostream>
 #include "Matrix.h"
 
-const double minControlValue = -15.0;
-const double maxControlValue = 15.0;
+const double minControlValue = -100.0;
+const double maxControlValue = 100.0;
 
 typedef enum {
     success,
@@ -34,7 +34,7 @@ result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const 
             v[i][0] = maxControlValue;
         }
     }
-    std::cout << "v:\n" << v << std::endl;
+//    std::cout << "v:\n" << v << std::endl;
     return success;
 }
 
@@ -47,15 +47,13 @@ result fastGradientMethod(const CMatrix& A, const CVector& B) {
     CMatrix H(rowsMatrixA, columnsMatrixA), F(predictionHorizon, predictionHorizon);
 
     calculateOptimizationMatrices(A, B, H, F);
-    for (uint32_t i = 0; i < 30; i++) {
-        calculateProjectedGradientStep(H, F, xk, v, 0.1);
+    for (uint32_t j = 0; j < 10; j++) {
+        for (uint32_t i = 0; i < 30; i++) {
+            calculateProjectedGradientStep(H, F, xk, v, 0.1);
+        }
+        xk = A * xk + B * v[0][0];
+        std::cout << "\nxk:\n" << xk << "\nv:\n" << v;;
     }
-    xk = A * xk + B * v[0][0];
-    std::cout << "xk:\n" << xk;
-    auto dd = B * v[0][0];
-    std::cout << "dd:\n" << dd;
-    auto co = xk + dd;
-    std::cout << "co:\n" << co;
     return success;
 }
 int main() {
