@@ -2,8 +2,8 @@
 #include <ctgmath>
 #include "Matrix.h"
 
-const double minControlValue = -100;
-const double maxControlValue = 100;
+const double minControlValue = -15;
+const double maxControlValue = 15;
 
 typedef enum {
     success,
@@ -37,39 +37,39 @@ result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const 
     uint32_t rows, columns;
     v.GetSize(rows, columns);
     CVector gradient(rows, 1);
-    gradient = H * v + F * xk;
+    gradient = H * v + F;
     v -= gradient * step;
-//    for (uint32_t i = 0; i < rows; i++) {
-//        if (v[i][0] < minControlValue) {
-//            v[i][0] = minControlValue;
-//        }
-//        else if (v[i][0] > maxControlValue) {
-//            v[i][0] = maxControlValue;
-//        }
-//    }
+    for (uint32_t i = 0; i < rows; i++) {
+        if (v[i][0] < minControlValue) {
+            v[i][0] = minControlValue;
+        }
+        else if (v[i][0] > maxControlValue) {
+            v[i][0] = maxControlValue;
+        }
+    }
     return success;
 }
 
 result fastGradientMethod(const CMatrix& A, const CVector& B) {
     const uint32_t predictionHorizon = 3;
     const double w = 100.0, eps = 0.01;
-    double temp[predictionHorizon] = {maxControlValue, maxControlValue, maxControlValue};
+    double temp[predictionHorizon] = {0, 0, 0};
     uint32_t rowsMatrixA, columnsMatrixA;
     A.GetSize(rowsMatrixA, columnsMatrixA);
     CVector xk(rowsMatrixA, 1), v(predictionHorizon, 1, temp);
-    CMatrix H(rowsMatrixA, columnsMatrixA), F(predictionHorizon, predictionHorizon);
+    CMatrix H(rowsMatrixA, columnsMatrixA), F(predictionHorizon, 1);
     CMatrix J(1,1), J_prev(1,1);
 
     for (uint32_t j = 0; j < 1; j++) {
         calculateOptimizationMatrices(A, B, xk, w, H, F);
         for (uint32_t i = 0; i < 100; i++) {
             calculateProjectedGradientStep(H, F, xk, v, 0.2);
-            J_prev = J;
-            J = v.T() * H * v / 2 + v.T() * F * xk;
-            if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
-                std::cout << std::endl << "i = " << i << " J = " << J << "J_prev = " << J_prev;
-                break;
-            }
+//            J_prev = J;
+//            J = v.T() * H * v / 2 + v.T() * F * xk;
+//            if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
+//                std::cout << std::endl << "i = " << i << " J = " << J << "J_prev = " << J_prev;
+//                break;
+//            }
         }
         xk = A * xk + B * v[0][0];
         std::cout << "\nxk:\n[" << j << "] " << xk << "\nv:\n" << v;;
@@ -77,7 +77,9 @@ result fastGradientMethod(const CMatrix& A, const CVector& B) {
     return success;
 }
 int main() {
-    double temp_A[9] = {-0.3833, -0.18, -0.1067, 0.25, 0, 0, 0, 0.0625, 0}, temp_B[3] = {0.5, 0, 0};
+   // double temp_A[9] = {-0.3833, -0.18, -0.1067, 0.25, 0, 0, 0, 0.0625, 0}, temp_B[3] = {0.5, 0, 0};
+    double temp_A[9] = {5, -2, -1, -2, 4, 3, -1, 3, 5}, temp_B[3] = {2, -35, -47};
+
     CMatrix A(3, 3, temp_A);
     CVector B(3, 1, temp_B);
     fastGradientMethod(A, B);
