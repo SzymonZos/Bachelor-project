@@ -11,3 +11,17 @@ step(inertiaStateSpace);
 %MPCobj = mpc(inertiaStateSpace, 0.1, 20, 3, [], MV);
 %MPCobj.sim()
 %sim(MPCobj)
+
+a = inertiaStateSpace.a;
+b = inertiaStateSpace.b;
+H = zeros(3,3);
+H(1, 1) = 2 * (1 + b(1) * b(1) + a(1,:) * b);
+H(1, 2) = 2 * a(1, :) * b * b(1);
+H(2, 1) = 2 * a(1, :) * b * b(1);
+H(2, 2) = 2 *(1 + b(1) * b(1));
+H(3, 3) = 2;
+F = zeros(3, 1);
+w = 4;
+x = ones(3, 1);
+F(1) = 2 * (a(1, :) * x * b(1) + (a(1,:) * a * x) * (a(1,:) * b) - w * a(1,:) * b);
+F(2) = 2 * (a(1, :) * a * x * b(1) - w * b(1));
