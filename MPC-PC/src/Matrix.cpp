@@ -177,7 +177,7 @@ double &CMatrix::GetElement(uint32_t row, uint32_t column) const
 }
 
 
-double *CMatrix::operator[](uint32_t row)
+double *CMatrix::operator[](uint32_t row) const
 {
 	if (row < 0 || row >= rows) {
 	    throw invalid_argument("[]: Requested index is out of range");

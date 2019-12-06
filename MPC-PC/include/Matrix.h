@@ -59,7 +59,7 @@ public:
 	void GetSize(uint32_t &rows, uint32_t &columns) const;
     double &GetElement(uint32_t row, uint32_t column) const;
 
-    virtual double *operator[](uint32_t row);
+    virtual double *operator[](uint32_t row) const;
 
     CMatrix operator + (const CMatrix &m) const;
     CMatrix & operator += (const CMatrix &m);
