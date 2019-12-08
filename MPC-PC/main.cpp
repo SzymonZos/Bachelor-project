@@ -10,26 +10,28 @@ typedef enum {
     failure
 } result;
 
-result calculateOptimizationMatrices(const CMatrix& A, const CVector& B, const CVector& xk, const double w, CMatrix& H, CMatrix& F) {
-//    CMatrix h11(1,1), F11(1, 1), F12(1,1), F13(1,1);
-//    CVector a1(3);
-//    for (uint32_t i = 0; i < 3; ++i) {
-//        a1[0][i] = A[0][i];
-//    }
-//    h11 = a1 * B;
-//    H[0][0] = 2 * (1 + B[0][0] * B[0][0] + h11[0][0] * h11[0][0]);
-//    H[0][1] = 2 * h11[0][0] * B[0][0];
-//    H[1][0] = H[0][1];
-//    H[1][1] = 2 * (1 + B[0][0] * B[0][0]);
-//    H[2][2] = 2;
-//
-//    F11 = a1 * xk;
-//    F12 = a1 * A * xk;
-//    F[0][0] = 2 * (F11[0][0] * B[0][0] - w * B[0][0] + F12[0][0] * h11[0][0] - w * h11[0][0]);
-//    F[1][0] = 2 * (F12[0][0] * B[0][0] - w * B[0][0]);
+result calculateOptimizationMatrices(const CMatrix& A, const CVector& B, const CVector& C, const CVector& xk, const double r, CMatrix& H, CMatrix& W) {
+    CMatrix fi(3, 3), Rw(3, 3);
+    CVector F(3), Rs(3);
 
-    F = B;
-    H = A;
+    fi[0][0] = (C * B)[0][0];
+    fi[1][0] = (C * A * B)[0][0];
+    fi[1][1] = fi[0][0];
+    fi[2][0] = (C * A * A * B)[0][0];
+    fi[2][1] = fi[1][0];
+    fi[2][2] = fi[1][1];
+
+    Rw[0][0] = 1; Rw[1][1] = 1; Rw[2][2] = 1;
+
+    F[0][0] = (C * A * xk)[0][0];
+    F[1][0] = (C * A * A * xk)[0][0];
+    F[2][0] = (C * A * A * A * xk)[0][0];
+
+    Rs[0][0] = r; Rs[1][0] = r; Rs[2][0] = r;
+
+    H = fi.T() * fi + Rw;
+    W = fi.T() * (F - Rs);
+
     return success;
 }
 
@@ -47,29 +49,30 @@ result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const 
             v[i][0] = maxControlValue;
         }
     }
+    std::cout << v << std::endl;
     return success;
 }
 
-result fastGradientMethod(const CMatrix& A, const CVector& B) {
-    const uint32_t predictionHorizon = 3;
-    const double w = 100.0, eps = 0.01;
-    double temp[predictionHorizon] = {0, 0, 0};
+result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C) {
+    const uint32_t predictionHorizon = 2;
+    const double r = 100.0, eps = 0.1;
+    double temp[predictionHorizon] = {0, 0};
     uint32_t rowsMatrixA, columnsMatrixA;
     A.GetSize(rowsMatrixA, columnsMatrixA);
     CVector xk(rowsMatrixA, 1), v(predictionHorizon, 1, temp);
-    CMatrix H(rowsMatrixA, columnsMatrixA), F(predictionHorizon, 1);
+    CMatrix H(predictionHorizon, predictionHorizon), W(predictionHorizon, 1);
     CMatrix J(1,1), J_prev(1,1);
 
-    for (uint32_t j = 0; j < 1; j++) {
-        calculateOptimizationMatrices(A, B, xk, w, H, F);
+    for (uint32_t j = 0; j < 100; j++) {
+        calculateOptimizationMatrices(A, B, C, xk, r, H, W);
         for (uint32_t i = 0; i < 100; i++) {
-            calculateProjectedGradientStep(H, F, xk, v, 0.2);
-//            J_prev = J;
-//            J = v.T() * H * v / 2 + v.T() * F * xk;
-//            if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
-//                std::cout << std::endl << "i = " << i << " J = " << J << "J_prev = " << J_prev;
-//                break;
-//            }
+            calculateProjectedGradientStep(H, W, xk, v, 0.2);
+            J_prev = J;
+            J = v.T() * H * v / 2 + v.T() * W;
+            if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
+                std::cout << std::endl << "i = " << i << " J = " << J << "J_prev = " << J_prev;
+                break;
+            }
         }
         xk = A * xk + B * v[0][0];
         std::cout << "\nxk:\n[" << j << "] " << xk << "\nv:\n" << v;;
@@ -77,12 +80,12 @@ result fastGradientMethod(const CMatrix& A, const CVector& B) {
     return success;
 }
 int main() {
-   // double temp_A[9] = {-0.3833, -0.18, -0.1067, 0.25, 0, 0, 0, 0.0625, 0}, temp_B[3] = {0.5, 0, 0};
-    double temp_A[9] = {5, -2, -1, -2, 4, 3, -1, 3, 5}, temp_B[3] = {2, -35, -47};
+    double temp_A[16] = {1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1};
+    double temp_B[4] = {0, 0, 1, 0}, temp_C[4] = {1, 1, 0, 0};
 
     CMatrix A(3, 3, temp_A);
-    CVector B(3, 1, temp_B);
-    fastGradientMethod(A, B);
+    CVector B(3, 1, temp_B), C(4, temp_C);
+    fastGradientMethod(A, B, C);
 //    std::cout << "Hejka";
     return 0;
 }
