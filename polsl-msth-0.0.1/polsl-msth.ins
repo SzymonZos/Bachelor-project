@@ -1,0 +1,51 @@
+\input docstrip.tex
+\keepsilent
+\askforoverwritefalse
+\preamble
+----------------------------------------------------------------
+polsl-msth --- Silesian University of Technology, Master of Science thesis
+Author:  Krzysztof Mazur
+E-mail:  krzysiek@podlesie.net
+License: Released under the LaTeX Project Public License v1.3c or later
+See:     http://www.latex-project.org/lppl.txt
+----------------------------------------------------------------
+
+\endpreamble
+\postamble
+
+Copyright (C) 2017 by Silesian University of Technology.
+Copyright (C) 2010, 2014 by Krzysztof Mazur <krzysiek@podlesie.net>
+Fragments from book class by The LaTeX3 Project.
+
+Author: Krzysztof Mazur <krzysiek@podlesie.net>
+
+This work may be distributed and/or modified under the
+conditions of the LaTeX Project Public License (LPPL), either
+version 1.3c of this license or (at your option) any later
+version.  The latest version of this license is in the file:
+
+http://www.latex-project.org/lppl.txt
+
+This work is "maintained" (as per LPPL maintenance status) by
+Krzysztof Mazur.
+
+This work consists of the file polsl-msth.dtx and a Makefile.
+Running make generates the derived files README, polsl-msth.pdf and polsl-msth.cls.
+Running make inst installs the files in the user's TeX tree.
+Running make install installs the files in the local TeX tree.
+
+\endpostamble
+
+\usedir{tex/latex/polsl-msth}
+\generate{
+  \file{\jobname.cls}{\from{\jobname.dtx}{class}}
+}
+\nopreamble\nopostamble
+\generate{
+  \file{\jobname-example.tex}{\from{\jobname.dtx}{example}}
+}
+\endbatchfile
+
+
+
+

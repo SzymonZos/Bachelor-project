@@ -1,0 +1,63 @@
+%% Thesis language: english or polish
+%% Thesis type: master or engineer
+\documentclass[polish,master]{polsl-msth}
+%% set document encoding
+\usepackage[latin2]{inputenc}
+
+%% thesis author
+\author{Jan Kowalski}
+
+%% thesis supervisor
+\supervisor{Jan Kowalski}
+
+%% thesis consultant, optional
+%% \consultant{Jan Kowalski}
+
+%% Thesis title
+\title{Przyk³ad wykorzystania klasy polsl-msth}
+\begin{document}
+\frontmatter
+\maketitle
+\tableofcontents
+\listoftables
+\listoffigures
+\mainmatter
+\chapter{Wprowadzenie}
+Dokument ten opisuje wykorzystanie klasy polsl-msth do przygotowania
+pracy magisterskiej na Wydziale Automatyki, Elektroniki i~Informatyki
+Politechniki ¦l±skiej. Sam dokument jest
+te¿ zgodny z~szablonem pracy magisterskiej.
+
+W~rozdziale \ref{zalecenia} znajduj± siê zalecenia odno¶nie formatowania
+pracy.
+
+\chapter{Zalecenia\label{zalecenia}}
+Pierwszy akapit rozdzia³u, sekcji lub podsekcji powinien rozpoczynaæ
+siê bez wciêcia. Wszystkie kolejne powinny mieæ wciêcie skonfigurowane
+w~klasie.
+
+Opis rysunków powinien znajdowaæ siê pod rysunkiem jak w~przypadku
+rysunku \ref{pi}.
+\begin{figure}[hbtp]
+\centerline{\includegraphics[width=1in]{pi}}
+\caption{Logo Politechniki ¦l±skiej.\label{pi}}
+\end{figure}
+
+Opis tabel powinien znajdowaæ siê nad tabel± jak w~przypadku
+tabeli \ref{tab}.
+\begin{table}[hbtp]
+\caption{Przyk³adowa tabela.\label{tab}}
+\centerline{\begin{tabular}{|c|c|}
+\hline
+1 & 2\\
+\hline
+3 & 4\\
+\hline
+\end{tabular}}
+\end{table}
+
+Równania powinny byæ numerowane jak równanie \ref{entropy}.
+\begin{equation}
+H(X) = -\sum_{i=0}^n P(x_i) \log_2 P(x_i).\label{entropy}
+\end{equation}
+\end{document}

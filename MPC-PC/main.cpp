@@ -74,7 +74,7 @@ result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C) 
             }
         }
         xk = A * xk + B * v[0][0];
-//        std::cout << "\nxk:\n[" << j << "] " << C * xk << "\nv:\n" << v;;
+        std::cout << "\nxk:\n[" << j << "] " << C * xk << "\nv:\n" << v;;
     }
     return success;
 }

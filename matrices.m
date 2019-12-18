@@ -2,11 +2,11 @@ k = 4; T1 = 5; T2 = 10; T3 = 12;
 inertia = k * tf(1, [T1 1]) * tf(1, [T2 1]) * tf(1, [T3 1]);
 inertiaStateSpace = ss(inertia);
 ssD = ss(inertiaStateSpace.a, inertiaStateSpace.b, inertiaStateSpace.c, inertiaStateSpace.d, 0.1);
-%{
-A = inertiaStateSpace.a;
-B = inertiaStateSpace.b;
-C = inertiaStateSpace.c;
-%}
+
+% A = inertiaStateSpace.a;
+% B = inertiaStateSpace.b;
+% C = inertiaStateSpace.c;
+
 
 A = [1, 0, 1, 0; 
     0, 1, 0, 1;
@@ -30,6 +30,7 @@ J = 0;
 H = fi' * fi + eye(3);
 W = fi' * (-w * ones(3,1) + F * x);
 y(1) = C*x;
+v = zeros(3,1);
 for j = 1:100
     W = fi' * (-w * ones(3,1) + F * x);
     %v = quadprog(H, W, [], [], [], [], -15 * ones(3, 1), 15 * ones(3, 1));
