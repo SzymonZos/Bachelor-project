@@ -1,5 +1,7 @@
 #include <iostream>
 #include <ctgmath>
+#include <charconv>
+#include <array>
 #include "Matrix.h"
 
 const double minControlValue = -0.5;
@@ -80,7 +82,7 @@ result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C) 
 }
 int main() {
     double temp_A[16] = {1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1};
-    double temp_B[4] = {0, 0, 1, 1}, temp_C[4] = {1, 1, 0, 0};
+    double temp_B[4] = {0, 0, 1, 0}, temp_C[4] = {1, 1, 0, 0};
 
     CMatrix A(4, 4, temp_A);
     CVector B(4, 1, temp_B), C(4, temp_C);

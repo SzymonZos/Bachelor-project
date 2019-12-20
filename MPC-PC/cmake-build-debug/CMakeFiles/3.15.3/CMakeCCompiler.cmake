@@ -1,7 +1,7 @@
-set(CMAKE_C_COMPILER "D:/Programy/MinGW/bin/gcc.exe")
+set(CMAKE_C_COMPILER "D:/Programy/MSYS2/mingw64/bin/gcc.exe")
 set(CMAKE_C_COMPILER_ARG1 "")
 set(CMAKE_C_COMPILER_ID "GNU")
-set(CMAKE_C_COMPILER_VERSION "8.2.0")
+set(CMAKE_C_COMPILER_VERSION "9.2.0")
 set(CMAKE_C_COMPILER_VERSION_INTERNAL "")
 set(CMAKE_C_COMPILER_WRAPPER "")
 set(CMAKE_C_STANDARD_COMPUTED_DEFAULT "11")
@@ -17,11 +17,11 @@ set(CMAKE_C_SIMULATE_VERSION "")
 
 
 
-set(CMAKE_AR "D:/Programy/MinGW/bin/ar.exe")
-set(CMAKE_C_COMPILER_AR "D:/Programy/MinGW/bin/gcc-ar.exe")
-set(CMAKE_RANLIB "D:/Programy/MinGW/bin/ranlib.exe")
-set(CMAKE_C_COMPILER_RANLIB "D:/Programy/MinGW/bin/gcc-ranlib.exe")
-set(CMAKE_LINKER "D:/Programy/MinGW/bin/ld.exe")
+set(CMAKE_AR "D:/Programy/MSYS2/mingw64/bin/ar.exe")
+set(CMAKE_C_COMPILER_AR "D:/Programy/MSYS2/mingw64/bin/gcc-ar.exe")
+set(CMAKE_RANLIB "D:/Programy/MSYS2/mingw64/bin/ranlib.exe")
+set(CMAKE_C_COMPILER_RANLIB "D:/Programy/MSYS2/mingw64/bin/gcc-ranlib.exe")
+set(CMAKE_LINKER "D:/Programy/MSYS2/mingw64/bin/ld.exe")
 set(CMAKE_MT "")
 set(CMAKE_COMPILER_IS_GNUCC 1)
 set(CMAKE_C_COMPILER_LOADED 1)
@@ -45,7 +45,7 @@ set(CMAKE_C_IGNORE_EXTENSIONS h;H;o;O;obj;OBJ;def;DEF;rc;RC)
 set(CMAKE_C_LINKER_PREFERENCE 10)
 
 # Save compiler ABI information.
-set(CMAKE_C_SIZEOF_DATA_PTR "4")
+set(CMAKE_C_SIZEOF_DATA_PTR "8")
 set(CMAKE_C_COMPILER_ABI "")
 set(CMAKE_C_LIBRARY_ARCHITECTURE "")
 
@@ -70,7 +70,7 @@ endif()
 
 
 
-set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "D:/Programy/MinGW/lib/gcc/mingw32/8.2.0/include;D:/Programy/MinGW/include;D:/Programy/MinGW/lib/gcc/mingw32/8.2.0/include-fixed")
-set(CMAKE_C_IMPLICIT_LINK_LIBRARIES "mingw32;gcc;moldname;mingwex;advapi32;shell32;user32;kernel32;mingw32;gcc;moldname;mingwex")
-set(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "D:/Programy/MinGW/lib/gcc/mingw32/8.2.0;D:/Programy/MinGW/lib/gcc;D:/Programy/MinGW/mingw32/lib;D:/Programy/MinGW/lib")
+set(CMAKE_C_IMPLICIT_INCLUDE_DIRECTORIES "D:/Programy/MSYS2/mingw64/lib/gcc/x86_64-w64-mingw32/9.2.0/include;D:/Programy/MSYS2/mingw64/include;D:/Programy/MSYS2/mingw64/lib/gcc/x86_64-w64-mingw32/9.2.0/include-fixed;D:/Programy/MSYS2/mingw64/x86_64-w64-mingw32/include")
+set(CMAKE_C_IMPLICIT_LINK_LIBRARIES "mingw32;gcc;moldname;mingwex;pthread;advapi32;shell32;user32;kernel32;mingw32;gcc;moldname;mingwex")
+set(CMAKE_C_IMPLICIT_LINK_DIRECTORIES "D:/Programy/MSYS2/mingw64/lib/gcc/x86_64-w64-mingw32/9.2.0;D:/Programy/MSYS2/mingw64/lib/gcc;D:/Programy/MSYS2/mingw64/x86_64-w64-mingw32/lib;D:/Programy/MSYS2/mingw64/lib")
 set(CMAKE_C_IMPLICIT_LINK_FRAMEWORK_DIRECTORIES "")

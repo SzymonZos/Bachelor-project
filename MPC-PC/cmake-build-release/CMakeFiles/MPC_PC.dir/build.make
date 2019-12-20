@@ -60,15 +60,15 @@ CMakeFiles/MPC_PC.dir/main.cpp.obj: CMakeFiles/MPC_PC.dir/flags.make
 CMakeFiles/MPC_PC.dir/main.cpp.obj: CMakeFiles/MPC_PC.dir/includes_CXX.rsp
 CMakeFiles/MPC_PC.dir/main.cpp.obj: ../main.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\cmake-build-release\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/MPC_PC.dir/main.cpp.obj"
-	D:\Programy\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\MPC_PC.dir\main.cpp.obj -c D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\main.cpp
+	D:\Programy\MSYS2\mingw64\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\MPC_PC.dir\main.cpp.obj -c D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\main.cpp
 
 CMakeFiles/MPC_PC.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/MPC_PC.dir/main.cpp.i"
-	D:\Programy\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\main.cpp > CMakeFiles\MPC_PC.dir\main.cpp.i
+	D:\Programy\MSYS2\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\main.cpp > CMakeFiles\MPC_PC.dir\main.cpp.i
 
 CMakeFiles/MPC_PC.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/MPC_PC.dir/main.cpp.s"
-	D:\Programy\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\main.cpp -o CMakeFiles\MPC_PC.dir\main.cpp.s
+	D:\Programy\MSYS2\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\main.cpp -o CMakeFiles\MPC_PC.dir\main.cpp.s
 
 # Object files for target MPC_PC
 MPC_PC_OBJECTS = \

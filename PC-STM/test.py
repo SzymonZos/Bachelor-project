@@ -2,33 +2,39 @@ import serial
 import time
 import numpy as np
 
-A = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]
+A = [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1]
 B = [0, 0, 1, 0]
 C = [1, 1, 0, 0]
 
-dataToSend = 'A = ' + str(A) + '; B = ' + str(B) + '; C = ' + str(C) + ';'
-
+dataToSend = 'A = ' + str(A) + '; B = ' + str(B) + '; C = ' + str(C) + ';\n\0'
+print(dataToSend, len(dataToSend))
 A = np.array(A).reshape(-1, int(np.sqrt(len(A))))
 B = np.array(B).reshape(len(B), -1)
 C = np.array(C)
 x = np.zeros((4, 1))
 y = []
 v = 0  # stab for now
-x = np.dot(A, x) + v * B
-y.append(np.dot(C, x).item(0))
-print(y)
 # y.append(C * x)
-
 i = 0
-try:
-    with serial.Serial('COM3', 115200, timeout=1) as ser:
-        ser.write(dataToSend)
-        while i < 100:
-            print(ser.read(10).decode('utf-8'))
-            time.sleep(0.1)
-            i += 1
-except:
-    print('Wild error appears')
+# try:
+with serial.Serial('COM3', 115200, timeout=1) as ser:
+    # ser.write(chr(len(dataToSend)).encode())
+    # ser.write(dataToSend.encode())
+    while i < 100:
+        xToSend = np.array2string(x.flatten(), formatter={'float_kind': lambda d: "%.4f" % d})
+        xToSend = xToSend[1:-1] + '\0'
+        ser.write(chr(len(xToSend)).encode())
+        ser.write(xToSend.encode())
+        v = float(ser.readline().decode('utf-8'))
+        x = np.dot(A, x) + v * B
+        print(x, v)
+        y.append(np.dot(C, x).item(0))
+
+        time.sleep(0.05)
+        i += 1
+print(y)
+# except:
+#     print('Wild error appears')
 
 # Jak widzę działanie tego skryptu:
 #

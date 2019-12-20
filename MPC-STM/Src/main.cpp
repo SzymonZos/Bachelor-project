@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 #include <cmath>
 #include <cstring>
+#include <tuple>
 #include "Matrix.h"
 /* USER CODE END Includes */
 
@@ -50,10 +51,11 @@ UART_HandleTypeDef huart2;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_USART2_UART_Init(void);
-static void send_string(const char* s);
+void SystemClock_Config();
+static void MX_GPIO_Init();
+static void MX_USART2_UART_Init();
+static void send_string(const uint8_t* s);
+static void receive_string(const uint8_t* s);
 /* USER CODE END 4 */
 
 
@@ -62,9 +64,9 @@ static void send_string(const char* s);
 /* USER CODE END PFP */
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-const double minControlValue = -15;
+const double minControlValue = -0.5;
 
-const double maxControlValue = 15;
+const double maxControlValue = 0.5;
 
 typedef enum {
     success,
@@ -125,34 +127,26 @@ result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const 
     }
     return success;
 }
-result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C) {
+double fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, const CVector& xk) {
     const uint32_t predictionHorizon = 3;
     const double r = 4.0, eps = 0.01;
     double temp[predictionHorizon] = {0, 0, 0};
     uint32_t rowsMatrixA, columnsMatrixA;
     A.GetSize(rowsMatrixA, columnsMatrixA);
-    CVector xk(rowsMatrixA, 1), v(predictionHorizon, 1, temp);
+    CVector v(predictionHorizon, 1, temp);
     CMatrix H(predictionHorizon, predictionHorizon), W(predictionHorizon, 1);
     CMatrix J(1,1), J_prev(1,1);
 
-    for (uint32_t j = 0; j < 100; j++) {
-        calculateOptimizationMatrices(A, B, C, xk, r, H, W);
-        for (uint32_t i = 0; i < 100; i++) {
-            calculateProjectedGradientStep(H, W, xk, v, 0.1);
-            J_prev = J;
-            J = v.T() * H * v / 2 + v.T() * W;
-            if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
-//                std::cout << std::endl << "i = " << i << " J = " << J << "J_prev = " << J_prev;
-                break;
-            }
+    calculateOptimizationMatrices(A, B, C, xk, r, H, W);
+    for (uint32_t i = 0; i < 100; i++) {
+        calculateProjectedGradientStep(H, W, xk, v, 0.1);
+        J_prev = J;
+        J = v.T() * H * v / 2 + v.T() * W;
+        if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
+            break;
         }
-        xk = A * xk + B * v[0][0];
     }
-    char buf[1024];
-    sprintf(buf, "Some values: %f\r\n%f\r\n", v[0][0], (C*xk)[0][0]);
-    printf("Test\r\n");
-    send_string(buf);
-    return success;
+    return v[0][0];
 }
 
 /*int main() {double temp_A[16] = {1, 0, 1,2 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1};
@@ -171,11 +165,14 @@ result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C) 
   * @brief  The application entry point.
   * @retval int
   */
-int main(void)
+int main()
 {
   /* USER CODE BEGIN 1 */
-    char buf[1024];
-    sprintf(buf, "Some values: %f\r\n%f\r\n", 2.5, 3.333);
+    uint8_t buf[1024];
+    char* pBuf = reinterpret_cast<char*>(buf);
+    uint8_t buf_size = 0;
+    sprintf(reinterpret_cast<char*>(buf), "Some values: %f\n%f\n", 2.5, 3.333);
+    double v = 0;
 
     /* USER CODE END 1 */
   
@@ -202,22 +199,31 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
-
+    //to poczeka
+  //  HAL_UART_Receive(&huart2, &buf_size, 1, 10000);
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
     double temp_A[16] = {1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1};
     double temp_B[4] = {0, 0, 1, 0}, temp_C[4] = {1, 1, 0, 0};
     CMatrix A(4, 4, temp_A);
-    CVector B(4, 1, temp_B), C(4, temp_C);
-    fastGradientMethod(A, B, C);
-  while (1)
-  {
-    /* USER CODE END WHILE */
-      HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-      send_string(buf);
-      HAL_Delay(100);
+    CVector B(4, 1, temp_B), C(4, temp_C), xk(4, 1);
+    char* end;
+    uint16_t iter = 0;
+    while (true) {
+        HAL_UART_Receive(&huart2, &buf_size, 1, 100);
+        HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);
+        pBuf = reinterpret_cast<char*>(buf); //to doda³em
+        xk[0][0] = std::strtod(pBuf, &end);
+        for (iter = 1; iter < 4; iter++) {
+            pBuf = end;
+            xk[iter][0] = std::strtod(pBuf, &end);
+        }
+        v = fastGradientMethod(A, B, C, xk);
+        sprintf(reinterpret_cast<char*>(buf), "%f\n", v); //do przetestowania co jes w buforze
+//      HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+        send_string(buf);
+//        HAL_Delay(100);
     /* USER CODE BEGIN 3 */
-  }
+    }
   /* USER CODE END 3 */
 }
 
@@ -227,7 +233,7 @@ int main(void)
   * @brief System Clock Configuration
   * @retval None
   */
-void SystemClock_Config(void)
+void SystemClock_Config()
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -271,7 +277,7 @@ void SystemClock_Config(void)
   * @param None
   * @retval None
   */
-static void MX_USART2_UART_Init(void)
+static void MX_USART2_UART_Init()
 {
 
   /* USER CODE BEGIN USART2_Init 0 */
@@ -304,7 +310,7 @@ static void MX_USART2_UART_Init(void)
   * @param None
   * @retval None
   */
-static void MX_GPIO_Init(void)
+static void MX_GPIO_Init()
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -346,10 +352,19 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-void send_string(const char* s)
+void send_string(const uint8_t* s)
 {
-    HAL_UART_Transmit(&huart2, (uint8_t*)s, strlen(s), 1000);
+    HAL_UART_Transmit(&huart2, const_cast<uint8_t *>(s), strlen(reinterpret_cast<const char*>(s)), 1000);
 }
+
+void receive_string(const uint8_t* s)
+{
+//    do {
+    HAL_UART_Receive(&huart2, const_cast<uint8_t*>(s), 89, 100);
+//    } while(*(ptr - 1) != '\n');
+//    HAL_UART_Transmit(&huart2, (uint8_t*)s, strlen(s), 1000);
+}
+
 
 #ifdef  USE_FULL_ASSERT
 /**

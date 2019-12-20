@@ -60,15 +60,15 @@ src/CMakeFiles/src.dir/Matrix.cpp.obj: src/CMakeFiles/src.dir/flags.make
 src/CMakeFiles/src.dir/Matrix.cpp.obj: src/CMakeFiles/src.dir/includes_CXX.rsp
 src/CMakeFiles/src.dir/Matrix.cpp.obj: ../src/Matrix.cpp
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object src/CMakeFiles/src.dir/Matrix.cpp.obj"
-	cd /d D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\cmake-build-debug\src && D:\Programy\MinGW\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\src.dir\Matrix.cpp.obj -c D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\src\Matrix.cpp
+	cd /d D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\cmake-build-debug\src && D:\Programy\MSYS2\mingw64\bin\g++.exe  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles\src.dir\Matrix.cpp.obj -c D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\src\Matrix.cpp
 
 src/CMakeFiles/src.dir/Matrix.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/src.dir/Matrix.cpp.i"
-	cd /d D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\cmake-build-debug\src && D:\Programy\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\src\Matrix.cpp > CMakeFiles\src.dir\Matrix.cpp.i
+	cd /d D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\cmake-build-debug\src && D:\Programy\MSYS2\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\src\Matrix.cpp > CMakeFiles\src.dir\Matrix.cpp.i
 
 src/CMakeFiles/src.dir/Matrix.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/src.dir/Matrix.cpp.s"
-	cd /d D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\cmake-build-debug\src && D:\Programy\MinGW\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\src\Matrix.cpp -o CMakeFiles\src.dir\Matrix.cpp.s
+	cd /d D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\cmake-build-debug\src && D:\Programy\MSYS2\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\Projekty\Semestr-VII\Bachelor-project\MPC-PC\src\Matrix.cpp -o CMakeFiles\src.dir\Matrix.cpp.s
 
 # Object files for target src
 src_OBJECTS = \

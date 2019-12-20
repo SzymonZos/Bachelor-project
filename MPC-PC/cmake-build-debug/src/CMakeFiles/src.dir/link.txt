@@ -1,2 +1,2 @@
-D:\Programy\MinGW\bin\ar.exe qc libsrc.a  CMakeFiles/src.dir/Matrix.cpp.obj
-D:\Programy\MinGW\bin\ranlib.exe libsrc.a
+D:\Programy\MSYS2\mingw64\bin\ar.exe qc libsrc.a  CMakeFiles/src.dir/Matrix.cpp.obj
+D:\Programy\MSYS2\mingw64\bin\ranlib.exe libsrc.a

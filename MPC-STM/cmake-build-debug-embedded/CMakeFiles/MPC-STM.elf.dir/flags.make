@@ -16,7 +16,7 @@ C_DEFINES = -DSTM32F401xE -DUSE_HAL_DRIVER -D__packed=__attribute__((__packed__)
 
 C_INCLUDES = -ID:\Projekty\Semestr-VII\Bachelor-project\MPC-STM\Inc -ID:\Projekty\Semestr-VII\Bachelor-project\MPC-STM\Drivers\STM32F4xx_HAL_Driver\Inc -ID:\Projekty\Semestr-VII\Bachelor-project\MPC-STM\Drivers\STM32F4xx_HAL_Driver\Inc\Legacy -ID:\Projekty\Semestr-VII\Bachelor-project\MPC-STM\Drivers\CMSIS\Device\ST\STM32F4xx\Include -ID:\Projekty\Semestr-VII\Bachelor-project\MPC-STM\Drivers\CMSIS\Include 
 
-CXX_FLAGS = -mcpu=cortex-m4  -mthumb -mthumb-interwork -ffunction-sections -fdata-sections     -g -fno-common -fmessage-length=0 -specs=nosys.specs -specs=nano.specs -std=c++11 -g   -std=gnu++11
+CXX_FLAGS = -mcpu=cortex-m4  -mthumb -mthumb-interwork -ffunction-sections -fdata-sections     -g -fno-common -fmessage-length=0 -specs=nosys.specs -specs=nano.specs -std=c++11 -g   -std=gnu++17
 
 CXX_DEFINES = -DSTM32F401xE -DUSE_HAL_DRIVER -D__packed=__attribute__((__packed__)) -D__weak=__attribute__((weak))
 

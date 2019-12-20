@@ -19,6 +19,10 @@ iostream
 -
 ctgmath
 -
+charconv
+-
+array
+-
 Matrix.h
 D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/Matrix.h
 
