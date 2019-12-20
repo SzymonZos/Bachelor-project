@@ -1,9 +1,0 @@
-
- \begin{theglossary} 
-
-    \makeatletter\scan@allowedfalse
-
-  \item v0.0.0\efill 
- \subitem General:\ First release\pfill 1
-
- \end{theglossary}

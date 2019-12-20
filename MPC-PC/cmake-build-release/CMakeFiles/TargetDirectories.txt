@@ -1,6 +1,0 @@
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/cmake-build-release/CMakeFiles/MPC_PC.dir
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/cmake-build-release/CMakeFiles/edit_cache.dir
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/cmake-build-release/CMakeFiles/rebuild_cache.dir
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/cmake-build-release/src/CMakeFiles/src.dir
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/cmake-build-release/src/CMakeFiles/edit_cache.dir
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-PC/cmake-build-release/src/CMakeFiles/rebuild_cache.dir

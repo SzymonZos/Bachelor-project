@@ -1,4 +1,0 @@
-D:\Programy\JetBrains\apps\CLion\ch-0\193.5233.144\bin\cmake\win\bin\cmake.exe -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=D:/Programy/ARM/gcc-arm-compiler/bin/arm-none-eabi-gcc.exe -DCMAKE_CXX_COMPILER=D:/Programy/ARM/gcc-arm-compiler/bin/arm-none-eabi-g++.exe -G "CodeBlocks - MinGW Makefiles" D:\Projekty\Semestr-VII\Bachelor-project\MPC-STM
--- Configuring done
--- Generating done
--- Build files have been written to: D:/Projekty/Semestr-VII/Bachelor-project/MPC-STM/cmake-build-release-embedded

@@ -1,4 +1,9 @@
-MPC_workspace/
-STM/
-slprj/
 *.asv
+
+slprj/
+LaTeX-*/
+
+**/cmake-*
+**/bin
+**/.idea
+**/venv

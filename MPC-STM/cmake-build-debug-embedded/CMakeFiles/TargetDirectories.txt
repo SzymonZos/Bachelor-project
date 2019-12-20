@@ -1,3 +1,0 @@
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-STM/cmake-build-debug-embedded/CMakeFiles/MPC-STM.elf.dir
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-STM/cmake-build-debug-embedded/CMakeFiles/edit_cache.dir
-D:/Projekty/Semestr-VII/Bachelor-project/MPC-STM/cmake-build-debug-embedded/CMakeFiles/rebuild_cache.dir
