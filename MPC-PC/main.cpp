@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ctgmath>
-#include <array>
+#include <algorithm>
+#include <regex>
 #include "Matrix.h"
 
 const double minControlValue = -0.5;
@@ -85,6 +86,32 @@ int main() {
 
     CMatrix A(4, 4, temp_A);
     CVector B(4, 1, temp_B), C(4, temp_C);
-    fastGradientMethod(A, B, C);
+//    fastGradientMethod(A, B, C);
+
+    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [4], 'extremeControlValues': [-0.5, 0.5]";
+    std::regex namesPattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
+    std::cmatch namesMatch;
+    char *iterPtr = python;
+    while(std::regex_search(iterPtr, namesMatch, namesPattern)) {
+        auto startMatch = reinterpret_cast<unsigned long long>(const_cast<char *>(namesMatch[1].first));
+        auto endMatch = reinterpret_cast<unsigned long long>(const_cast<char *>(namesMatch[1].second));
+//        namesMatch[0].
+        std::cout << startMatch << std::endl << endMatch << std::endl;
+        auto findA = std::find(namesMatch[1].first, namesMatch[1].second, 'A');
+        std::cout << reinterpret_cast<unsigned long long>(findA) << std::endl;
+//        std::find(namesMatch[1].first, namesMatch[1].second, 'B');
+//        std::find(namesMatch[1].first, namesMatch[1].second, 'C');
+//        std::find(namesMatch[1].first, namesMatch[1].second, "set");
+// Co tutaj trzeba zrobić:
+// find nie zadziała na const char* z wyszukiwaniem substringu
+// strstr też nie zadziała, bo ten const char* nie jest null terminated
+// raczej powinienem przepisać to z powrotem na stringi i liczyć, że się to nie wywali na stmie
+        std::find(namesMatch[1].first, namesMatch[1].second, "Control");
+        std::cout << " names: " << namesMatch[1] << " values: " << namesMatch[3] << std::endl;
+        iterPtr = const_cast<char*>(namesMatch.suffix().first);
+    }
+    // najłatwiej będzie chyba regexem to zrobić
+    // ((?<=')\w+)|((?<=: \[).+?(?=\]))
+    //'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': 4, 'extremeControlValues': [-0.5, 0.5]
     return 0;
 }

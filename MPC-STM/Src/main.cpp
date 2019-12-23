@@ -90,7 +90,6 @@ int main() {
     uint8_t buf[1024];
     char* pBuf;
     uint8_t buf_size = 0;
-    sprintf(reinterpret_cast<char*>(buf), "Some values: %f\n%f\n", 2.5, 3.333);
     double v = 0;
 
     // Reset of all peripherals, Initializes the Flash interface and the Systick.
@@ -99,8 +98,10 @@ int main() {
     MX_GPIO_Init();
     MX_USART2_UART_Init();
 
-    // to poczeka
-    // HAL_UART_Receive(&huart2, &buf_size, 1, 10000);
+    // 20s wait after STM reboot to read data sent from PC
+    HAL_UART_Receive(&huart2, &buf_size, 1, 20000);
+    HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);
+
 
     double temp_A[16] = {1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1};
     double temp_B[4] = {0, 0, 1, 0}, temp_C[4] = {1, 1, 0, 0};
@@ -111,17 +112,15 @@ int main() {
     while (true) {
         HAL_UART_Receive(&huart2, &buf_size, 1, 100);
         HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);
-        pBuf = reinterpret_cast<char*>(buf); //to dodałem
+        pBuf = reinterpret_cast<char*>(buf);
         xk[0][0] = std::strtod(pBuf, &end);
         for (iter = 1; iter < 4; iter++) {
             pBuf = end;
             xk[iter][0] = std::strtod(pBuf, &end);
         }
         v = fastGradientMethod(A, B, C, xk);
-        sprintf(reinterpret_cast<char*>(buf), "%f\n", v); //do przetestowania co jes w buforze
-        // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+        sprintf(reinterpret_cast<char*>(buf), "%f\n", v);
         send_string(buf);
-        // HAL_Delay(100);
     }
 }
 
