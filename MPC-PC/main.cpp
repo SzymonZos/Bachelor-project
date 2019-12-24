@@ -1,6 +1,8 @@
 #include <iostream>
 #include <ctgmath>
 #include <algorithm>
+#include <map>
+#include <vector>
 #include <regex>
 #include "Matrix.h"
 
@@ -54,9 +56,9 @@ result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const 
     return success;
 }
 
-result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C) {
+result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, double r) {
     const uint32_t predictionHorizon = 3;
-    const double r = 4.0, eps = 0.01;
+    const double eps = 0.01;
     double temp[predictionHorizon] = {0, 0, 0};
     uint32_t rowsMatrixA, columnsMatrixA;
     A.GetSize(rowsMatrixA, columnsMatrixA);
@@ -80,38 +82,59 @@ result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C) 
     }
     return success;
 }
+
+result stringToDouble(const char* c_string, double* c_array, unsigned length) {
+    char* end;
+    for (unsigned iter = 0; iter < length; iter++) {
+        c_array[iter] = std::strtod(c_string, &end);
+        if (c_string == end) {
+            return failure;
+        }
+        c_string = end;
+    }
+    return success;
+}
+
 int main() {
-    double temp_A[16] = {1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1};
-    double temp_B[4] = {0, 0, 1, 0}, temp_C[4] = {1, 1, 0, 0};
+    double temp_A[16], temp_B[4], temp_C[4], controlExtremeValues[2], w;
+    char *dummy;
+    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-0.5, 0.5]";
+    std::string pythonString = python, valuesMatch;
+    std::regex namesPattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
+    std::smatch namesMatch;
+    std::string::const_iterator iterPtr(pythonString.cbegin());
+    size_t currentSize;
+    std::map<std::string, std::vector<double>> dict;
+
+    while(std::regex_search(iterPtr, pythonString.cend(), namesMatch, namesPattern)) {
+        valuesMatch = namesMatch[3].str();
+        currentSize = std::count(valuesMatch.begin(), valuesMatch.end(), ',') + 1;
+        std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
+        valuesMatch.pop_back(); // trim ]
+        valuesMatch.erase(0, 1); // trim [
+        std::cout << valuesMatch.length() << std::endl;
+        if(namesMatch[1].str().find('A') != std::string::npos) {
+            dict["A"] = currentSize;
+            stringToDouble(valuesMatch.c_str(), temp_A, 16);
+        }
+        else if(namesMatch[1].str().find('B') != std::string::npos) {
+            dict["A"] = currentSize;
+            stringToDouble(valuesMatch.c_str(), temp_B, 4);
+        }
+        else if(namesMatch[1].str().find('C') != std::string::npos) {
+            stringToDouble(valuesMatch.c_str(), temp_C, 4);
+        }
+        else if(namesMatch[1].str().find("set") != std::string::npos) {
+            w = std::strtod(valuesMatch.c_str(), &dummy);
+        }
+        else if(namesMatch[1].str().find("control") != std::string::npos) {
+            stringToDouble(valuesMatch.c_str(), controlExtremeValues, 2);
+        }
+        iterPtr = namesMatch.suffix().first;
+    }
 
     CMatrix A(4, 4, temp_A);
     CVector B(4, 1, temp_B), C(4, temp_C);
-//    fastGradientMethod(A, B, C);
-
-    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [4], 'extremeControlValues': [-0.5, 0.5]";
-    std::regex namesPattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
-    std::cmatch namesMatch;
-    char *iterPtr = python;
-    while(std::regex_search(iterPtr, namesMatch, namesPattern)) {
-        auto startMatch = reinterpret_cast<unsigned long long>(const_cast<char *>(namesMatch[1].first));
-        auto endMatch = reinterpret_cast<unsigned long long>(const_cast<char *>(namesMatch[1].second));
-//        namesMatch[0].
-        std::cout << startMatch << std::endl << endMatch << std::endl;
-        auto findA = std::find(namesMatch[1].first, namesMatch[1].second, 'A');
-        std::cout << reinterpret_cast<unsigned long long>(findA) << std::endl;
-//        std::find(namesMatch[1].first, namesMatch[1].second, 'B');
-//        std::find(namesMatch[1].first, namesMatch[1].second, 'C');
-//        std::find(namesMatch[1].first, namesMatch[1].second, "set");
-// Co tutaj trzeba zrobić:
-// find nie zadziała na const char* z wyszukiwaniem substringu
-// strstr też nie zadziała, bo ten const char* nie jest null terminated
-// raczej powinienem przepisać to z powrotem na stringi i liczyć, że się to nie wywali na stmie
-        std::find(namesMatch[1].first, namesMatch[1].second, "Control");
-        std::cout << " names: " << namesMatch[1] << " values: " << namesMatch[3] << std::endl;
-        iterPtr = const_cast<char*>(namesMatch.suffix().first);
-    }
-    // najłatwiej będzie chyba regexem to zrobić
-    // ((?<=')\w+)|((?<=: \[).+?(?=\]))
-    //'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': 4, 'extremeControlValues': [-0.5, 0.5]
+//    fastGradientMethod(A, B, C, w);
     return 0;
 }
