@@ -83,58 +83,69 @@ result fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, 
     return success;
 }
 
-result stringToDouble(const char* c_string, double* c_array, unsigned length) {
-    char* end;
-    for (unsigned iter = 0; iter < length; iter++) {
-        c_array[iter] = std::strtod(c_string, &end);
-        if (c_string == end) {
-            return failure;
+void stringToDouble(const std::string& data_reference, std::vector<double>& data_to_fill) {
+    const char* begin = nullptr;
+    char* end = const_cast<char*>(data_reference.c_str());
+    double value;
+    do {
+        begin = end;
+        value = std::strtod(begin, &end);
+        if (begin != end) {
+            data_to_fill.push_back(value);
         }
-        c_string = end;
+    } while(begin != end);
+}
+
+template<typename __Map>
+void print_map(const __Map& m)
+{
+    std::cout << "{";
+    for(const auto& p : m) {
+        std::cout << '\'' << p.first << "': [";
+        for(const auto& v : p.second) {
+            std::cout << v << ", ";
+        }
+        std::cout << "\b\b], ";
     }
-    return success;
+    std::cout << "\b\b}\n";
 }
 
 int main() {
-    double temp_A[16], temp_B[4], temp_C[4], controlExtremeValues[2], w;
-    char *dummy;
     char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-0.5, 0.5]";
     std::string pythonString = python, valuesMatch;
     std::regex namesPattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
     std::smatch namesMatch;
     std::string::const_iterator iterPtr(pythonString.cbegin());
-    size_t currentSize;
     std::map<std::string, std::vector<double>> dict;
 
     while(std::regex_search(iterPtr, pythonString.cend(), namesMatch, namesPattern)) {
         valuesMatch = namesMatch[3].str();
-        currentSize = std::count(valuesMatch.begin(), valuesMatch.end(), ',') + 1;
         std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
         valuesMatch.pop_back(); // trim ]
         valuesMatch.erase(0, 1); // trim [
-        std::cout << valuesMatch.length() << std::endl;
         if(namesMatch[1].str().find('A') != std::string::npos) {
-            dict["A"] = currentSize;
-            stringToDouble(valuesMatch.c_str(), temp_A, 16);
+            stringToDouble(valuesMatch, dict["A"]);
         }
         else if(namesMatch[1].str().find('B') != std::string::npos) {
-            dict["A"] = currentSize;
-            stringToDouble(valuesMatch.c_str(), temp_B, 4);
+            stringToDouble(valuesMatch, dict["B"]);
         }
         else if(namesMatch[1].str().find('C') != std::string::npos) {
-            stringToDouble(valuesMatch.c_str(), temp_C, 4);
+            stringToDouble(valuesMatch, dict["C"]);
         }
         else if(namesMatch[1].str().find("set") != std::string::npos) {
-            w = std::strtod(valuesMatch.c_str(), &dummy);
+            stringToDouble(valuesMatch, dict["set"]);
         }
         else if(namesMatch[1].str().find("control") != std::string::npos) {
-            stringToDouble(valuesMatch.c_str(), controlExtremeValues, 2);
+            stringToDouble(valuesMatch, dict["control"]);
         }
         iterPtr = namesMatch.suffix().first;
     }
 
-    CMatrix A(4, 4, temp_A);
-    CVector B(4, 1, temp_B), C(4, temp_C);
-//    fastGradientMethod(A, B, C, w);
+    print_map(dict);
+    size_t dd = static_cast<size_t>(std::sqrt(dict["A"].size()));
+    CMatrix A(dd, dd, dict["A"].data());
+    CVector B(dict["B"].size(), 1, dict["B"].data()), C(4, dict["C"].data());
+    double w = *(dict["set"].data());
+    fastGradientMethod(A, B, C, w);
     return 0;
 }
