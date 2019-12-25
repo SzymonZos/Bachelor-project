@@ -23,18 +23,18 @@ SET(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/STM32F401RETx_FLASH.ld)
 #Uncomment for software floating point
 #SET(FPU_FLAGS "-mfloat-abi=soft")
 
-SET(COMMON_FLAGS
-    "-mcpu=cortex-m4 ${FPU_FLAGS} -mthumb -mthumb-interwork -ffunction-sections -fdata-sections \
+SET(COMMON_FLAGS "-mcpu=cortex-m4 -Wno-psabi -mthumb -mthumb-interwork -ffunction-sections -fdata-sections \
     -g -fno-common -fmessage-length=0 -specs=nosys.specs -specs=nano.specs")
 
-SET(CMAKE_CXX_FLAGS_INIT "${COMMON_FLAGS} -std=c++17")
-SET(CMAKE_C_FLAGS_INIT "${COMMON_FLAGS} -std=gnu99")
-SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections, --print-memory-usage -T ${LINKER_SCRIPT}")
+SET(CMAKE_CXX_FLAGS "${COMMON_FLAGS} -std=c++17")
+SET(CMAKE_C_FLAGS "${COMMON_FLAGS} -std=gnu99")
+SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections -Wl,--print-memory-usage")
 
 PROJECT(MPC-STM C CXX ASM)
 set(CMAKE_CXX_STANDARD 17)
 
 #add_definitions(-DARM_MATH_CM4 -DARM_MATH_MATRIX_CHECK -DARM_MATH_ROUNDING -D__FPU_PRESENT=1)
+
 add_definitions(-D__weak=__attribute__\(\(weak\)\) -D__packed=__attribute__\(\(__packed__\)\) -DUSE_HAL_DRIVER -DSTM32F401xE)
 
 file(GLOB_RECURSE SOURCES "startup/*.*" "Drivers/*.*" "Src/*.*")
@@ -44,7 +44,7 @@ include_directories(Inc Drivers/STM32F4xx_HAL_Driver/Inc Drivers/STM32F4xx_HAL_D
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 
 set(CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map -lc -u _printf_float")
+    "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT} -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map -lc -u _printf_float")
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)

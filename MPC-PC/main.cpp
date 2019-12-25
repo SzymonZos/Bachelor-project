@@ -6,8 +6,8 @@
 #include <regex>
 #include "Matrix.h"
 
-const double minControlValue = -0.5;
-const double maxControlValue = 0.5;
+double minControlValue;
+double maxControlValue;
 
 typedef enum {
     success,
@@ -111,7 +111,7 @@ void print_map(const __Map& m)
 }
 
 int main() {
-    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-0.5, 0.5]";
+    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-5, 5]";
     std::string pythonString = python, valuesMatch;
     std::regex namesPattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
     std::smatch namesMatch;
@@ -145,7 +145,9 @@ int main() {
     size_t dd = static_cast<size_t>(std::sqrt(dict["A"].size()));
     CMatrix A(dd, dd, dict["A"].data());
     CVector B(dict["B"].size(), 1, dict["B"].data()), C(4, dict["C"].data());
-    double w = *(dict["set"].data());
+    double w = dict["set"][0];
+    minControlValue = dict["control"][0];
+    maxControlValue = dict["control"][1];
     fastGradientMethod(A, B, C, w);
     return 0;
 }

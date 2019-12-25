@@ -1,7 +1,10 @@
 #include "main.h"
 #include <cmath>
 #include <cstring>
-#include <tuple>
+#include <algorithm>
+#include <map>
+#include <vector>
+#include <regex>
 #include "Matrix.h"
 
 UART_HandleTypeDef huart2;
@@ -11,9 +14,8 @@ static void MX_GPIO_Init();
 static void MX_USART2_UART_Init();
 static void send_string(const uint8_t* s);
 
-const double minControlValue = -0.5;
-
-const double maxControlValue = 0.5;
+double minControlValue = -0.5;
+double maxControlValue = 0.5;
 
 typedef enum {
     success,
@@ -61,6 +63,7 @@ result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const 
     }
     return success;
 }
+
 double fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, const CVector& xk) {
     const uint32_t predictionHorizon = 3;
     const double r = 4.0, eps = 0.01;
@@ -83,6 +86,33 @@ double fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, 
     return v[0][0];
 }
 
+void stringToDouble(const std::string& data_reference, std::vector<double>& data_to_fill) {
+    const char* begin = nullptr;
+    char* end = const_cast<char*>(data_reference.c_str());
+    double value;
+    do {
+        begin = end;
+        value = std::strtod(begin, &end);
+        if (begin != end) {
+            data_to_fill.push_back(value);
+        }
+    } while(begin != end);
+}
+
+template<typename __Map>
+void print_map(const __Map& m)
+{
+    std::cout << "{";
+    for(const auto& p : m) {
+        std::cout << '\'' << p.first << "': [";
+        for(const auto& v : p.second) {
+            std::cout << v << ", ";
+        }
+        std::cout << "\b\b], ";
+    }
+    std::cout << "\b\b}\n";
+}
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
 
@@ -102,13 +132,47 @@ int main() {
     HAL_UART_Receive(&huart2, &buf_size, 1, 20000);
     HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);
 
+    std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
+    std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
+    std::smatch fullMatch;
+    std::string::const_iterator iterator(pythonString.cbegin());
+    std::map<std::string, std::vector<double>> dict;
 
-    double temp_A[16] = {1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1};
-    double temp_B[4] = {0, 0, 1, 0}, temp_C[4] = {1, 1, 0, 0};
-    CMatrix A(4, 4, temp_A);
-    CVector B(4, 1, temp_B), C(4, temp_C), xk(4, 1);
+    while(std::regex_search(iterator, pythonString.cend(), fullMatch, pattern)) {
+        valuesMatch = fullMatch[3].str();
+        std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
+        valuesMatch.pop_back(); // trim ]
+        valuesMatch.erase(0, 1); // trim [
+        if(fullMatch[1].str().find('A') != std::string::npos) {
+            stringToDouble(valuesMatch, dict["A"]);
+        }
+        else if(fullMatch[1].str().find('B') != std::string::npos) {
+            stringToDouble(valuesMatch, dict["B"]);
+        }
+        else if(fullMatch[1].str().find('C') != std::string::npos) {
+            stringToDouble(valuesMatch, dict["C"]);
+        }
+        else if(fullMatch[1].str().find("set") != std::string::npos) {
+            stringToDouble(valuesMatch, dict["set"]);
+        }
+        else if(fullMatch[1].str().find("control") != std::string::npos) {
+            stringToDouble(valuesMatch, dict["control"]);
+        }
+        iterator = fullMatch.suffix().first;
+    }
+
+    size_t dimension = static_cast<size_t>(std::sqrt(dict["A"].size()));
+    CMatrix A(dimension, dimension, dict["A"].data());
+    CVector B(dict["B"].size(), 1, dict["B"].data());
+    CVector C(dict["C"].size(), dict["C"].data());
+    CVector xk(dict["C"].size(), 1);
+    double w = dict["set"][0];
+    minControlValue = dict["control"][0];
+    maxControlValue = dict["control"][1];
     char* end;
     uint16_t iter = 0;
+    send_string(buf);
+
     while (true) {
         HAL_UART_Receive(&huart2, &buf_size, 1, 100);
         HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);

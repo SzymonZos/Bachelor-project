@@ -15,9 +15,10 @@ C = np.array(systemParameters['C'])
 x = np.zeros((4, 1))
 y = []
 print(systemParametersToSend)
-with serial.Serial('COM3', 115200, timeout=1) as ser:
-    # ser.write(chr(len(systemParametersToSend)).encode()) TODO: handle this at STM side
-    # ser.write(systemParametersToSend.encode())
+with serial.Serial('COM3', 115200, timeout=10) as ser:
+    ser.write(chr(len(systemParametersToSend)).encode())  # TODO: handle this at STM side
+    ser.write(systemParametersToSend.encode())
+    print(ser.readline())
     for i in range(101):
         xToSend = np.array2string(x.flatten(), formatter={'float_kind': lambda number: "%.4f" % number})
         xToSend = xToSend[1:-1] + '\0'
