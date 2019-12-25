@@ -64,9 +64,9 @@ result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const 
     return success;
 }
 
-double fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, const CVector& xk) {
+double fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, const CVector& xk, double r) {
     const uint32_t predictionHorizon = 3;
-    const double r = 4.0, eps = 0.01;
+    double eps = 0.01;
     double temp[predictionHorizon] = {0, 0, 0};
     uint32_t rowsMatrixA, columnsMatrixA;
     A.GetSize(rowsMatrixA, columnsMatrixA);
@@ -129,8 +129,9 @@ int main() {
     MX_USART2_UART_Init();
 
     // 20s wait after STM reboot to read data sent from PC
-    HAL_UART_Receive(&huart2, &buf_size, 1, 20000);
-    HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);
+//    HAL_UART_Receive(&huart2, &buf_size, 1, 20000);
+//    HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);
+    sprintf(reinterpret_cast<char*>(buf), "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [1], 'controlExtremeValues': [-5, 5]");
 
     std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
     std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
@@ -166,7 +167,8 @@ int main() {
     CVector B(dict["B"].size(), 1, dict["B"].data());
     CVector C(dict["C"].size(), dict["C"].data());
     CVector xk(dict["C"].size(), 1);
-    double w = dict["set"][0];
+//    double w = dict["set"][0];
+    double w = 10;
     minControlValue = dict["control"][0];
     maxControlValue = dict["control"][1];
     char* end;
@@ -182,7 +184,7 @@ int main() {
             pBuf = end;
             xk[iter][0] = std::strtod(pBuf, &end);
         }
-        v = fastGradientMethod(A, B, C, xk);
+        v = fastGradientMethod(A, B, C, xk, w);
         sprintf(reinterpret_cast<char*>(buf), "%f\n", v);
         send_string(buf);
     }

@@ -28,7 +28,7 @@ SET(COMMON_FLAGS "-mcpu=cortex-m4 -Wno-psabi -mthumb -mthumb-interwork -ffunctio
 
 SET(CMAKE_CXX_FLAGS "${COMMON_FLAGS} -std=c++17")
 SET(CMAKE_C_FLAGS "${COMMON_FLAGS} -std=gnu99")
-SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections -Wl,--print-memory-usage")
+SET(CMAKE_EXE_LINKER_FLAGS_INIT "-Wl,-gc-sections -Wl,--print-memory-usage -T ${LINKER_SCRIPT}")
 
 PROJECT(MPC-STM C CXX ASM)
 set(CMAKE_CXX_STANDARD 17)
@@ -44,7 +44,7 @@ include_directories(Inc Drivers/STM32F4xx_HAL_Driver/Inc Drivers/STM32F4xx_HAL_D
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 
 set(CMAKE_EXE_LINKER_FLAGS
-    "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_EXE_LINKER_FLAGS_INIT} -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map -lc -u _printf_float")
+    "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map -lc -u _printf_float")
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)

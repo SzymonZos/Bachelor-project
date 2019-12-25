@@ -111,7 +111,7 @@ void print_map(const __Map& m)
 }
 
 int main() {
-    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-5, 5]";
+        char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-5, 5]";
     std::string pythonString = python, valuesMatch;
     std::regex namesPattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
     std::smatch namesMatch;
