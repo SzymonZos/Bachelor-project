@@ -129,9 +129,9 @@ int main() {
     MX_USART2_UART_Init();
 
     // 20s wait after STM reboot to read data sent from PC
-//    HAL_UART_Receive(&huart2, &buf_size, 1, 20000);
-//    HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);
-    sprintf(reinterpret_cast<char*>(buf), "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [1], 'controlExtremeValues': [-5, 5]");
+    HAL_UART_Receive(&huart2, &buf_size, 1, 20000);
+    HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), buf_size, 100);
+//    sprintf(reinterpret_cast<char*>(buf), "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [1], 'controlExtremeValues': [-5, 5]");
 
     std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
     std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
@@ -167,17 +167,17 @@ int main() {
     CVector B(dict["B"].size(), 1, dict["B"].data());
     CVector C(dict["C"].size(), dict["C"].data());
     CVector xk(dict["C"].size(), 1);
-//    double w = dict["set"][0];
-    double w = 10;
+    double w = dict["set"][0];
     minControlValue = dict["control"][0];
     maxControlValue = dict["control"][1];
     char* end;
     uint16_t iter = 0;
+    sprintf(reinterpret_cast<char*>(buf), "buf size: %u, w: %f, min: %f, max: %f, A: %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f, %f", buf_size, w, minControlValue, maxControlValue, A[0][0], A[0][1], A[0][2], A[0][3], A[1][0], A[1][1], A[1][2], A[1][3], A[2][0], A[2][1], A[2][2], A[2][3], A[3][0], A[3][1], A[3][2], A[3][3]);
     send_string(buf);
 
     while (true) {
-        HAL_UART_Receive(&huart2, &buf_size, 1, 100);
-        HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), static_cast<uint16_t>(buf_size), 100);
+        HAL_UART_Receive(&huart2, &buf_size, 1, 1000);
+        HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), buf_size, 100);
         pBuf = reinterpret_cast<char*>(buf);
         xk[0][0] = std::strtod(pBuf, &end);
         for (iter = 1; iter < 4; iter++) {
