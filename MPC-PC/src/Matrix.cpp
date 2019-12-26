@@ -1,10 +1,9 @@
 #include "Matrix.h"
 
-void CMatrix::Add(const CMatrix &m)
+void CMatrix::Add(const CMatrix& m)
 {
 	if (rows != m.rows || columns != m.columns) {
-	    std::cout << "rows: " << rows << " m.rows: " << m.rows << " columns: " << columns << " m.columns: " << m.columns << std::endl;
-	    throw invalid_argument("Add: Mismatch of matrices' dimensions");
+	    throw std::invalid_argument("Add: Mismatch of matrices' dimensions");
 	}
 
 	for (uint32_t i = 0; i < rows; i++) {
@@ -14,10 +13,10 @@ void CMatrix::Add(const CMatrix &m)
     }
 }
 
-void CMatrix::Sub(const CMatrix &m)
+void CMatrix::Sub(const CMatrix& m)
 {
 	if (rows != m.rows || columns != m.columns) {
-	    throw invalid_argument("Sub: Mismatch of matrices' dimensions");
+	    throw std::invalid_argument("Sub: Mismatch of matrices' dimensions");
 	}
 
 	for (uint32_t i = 0; i < rows; i++) {
@@ -27,10 +26,10 @@ void CMatrix::Sub(const CMatrix &m)
     }
 }
 
-CMatrix CMatrix::Mul(const CMatrix &m) const
+CMatrix CMatrix::Mul(const CMatrix& m) const
 {
 	if (columns != m.rows) {
-	    throw invalid_argument("Mul: Mismatch of matrices' dimensions");
+	    throw std::invalid_argument("Mul: Mismatch of matrices' dimensions");
 	}
 
 	CMatrix productMatrix(rows, m.columns);
@@ -44,7 +43,7 @@ CMatrix CMatrix::Mul(const CMatrix &m) const
 	return productMatrix;
 }
 
-void CMatrix::Mul(const double &scalar)
+void CMatrix::Mul(const double& scalar)
 {
 	for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
@@ -53,10 +52,10 @@ void CMatrix::Mul(const double &scalar)
     }
 }
 
-void CMatrix::Div(const double &scalar)
+void CMatrix::Div(const double& scalar)
 {
 	if (scalar == 0) {
-	    throw invalid_argument("Div: Cannot divide by 0");
+	    throw std::invalid_argument("Div: Cannot divide by 0");
 	}
 
 	for (uint32_t i = 0; i < rows; i++) {
@@ -79,7 +78,7 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns) : rows(rows), columns(columns)
 	}
 }
 
-CMatrix::CMatrix(uint32_t rows, uint32_t columns, double **mat) : rows(rows), columns(columns) //!< Konstruktor nadaj¹cy macierzy w klasie wartoœæ ró¿n¹ od zera.
+CMatrix::CMatrix(uint32_t rows, uint32_t columns, double** mat) : rows(rows), columns(columns) //!< Konstruktor nadaj¹cy macierzy w klasie wartoœæ ró¿n¹ od zera.
 {
 	matrix = new double*[rows];
 	for (uint32_t i = 0; i < rows; i++) {
@@ -92,7 +91,7 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, double **mat) : rows(rows), co
 	}
 }
 
-CMatrix::CMatrix(uint32_t rows, uint32_t columns, double *mat) : rows(rows), columns(columns) //!< Zapisanie wektora jako macierz.
+CMatrix::CMatrix(uint32_t rows, uint32_t columns, const double* mat) : rows(rows), columns(columns) //!< Zapisanie wektora jako macierz.
 {
 	matrix = new double*[rows];
 	for (uint32_t i = 0; i < rows; i++) {
@@ -105,9 +104,9 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, double *mat) : rows(rows), col
 	}
 }
 
-CMatrix::CMatrix(const CMatrix & M) : rows(M.rows), columns(M.columns) //!< Konstruktor kopiuj¹cy
+CMatrix::CMatrix(const CMatrix& M) : rows(M.rows), columns(M.columns) //!< Konstruktor kopiuj¹cy
 {
-	matrix = new double *[rows];
+	matrix = new double*[rows];
 	for (uint32_t i = 0; i < rows; i++) {
 		matrix[i] = new double[columns];
 	}
@@ -126,7 +125,7 @@ CMatrix::~CMatrix() //!< Destruktor, usuwam osobno wiersze i kolumny.
 	delete[] matrix;
 }
 
-CMatrix &CMatrix:: operator = (const CMatrix &m) //!< Operator = bêdzie przypisywaæ macierz do macierzy.
+CMatrix& CMatrix:: operator= (const CMatrix& m) //!< Operator = bêdzie przypisywaæ macierz do macierzy.
 {
 	for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
@@ -153,102 +152,126 @@ void CMatrix::inverse()
 	}
 }
 
-void CMatrix::zero()
-{
-	for (uint32_t i = 0; i < rows; i++) {
-        for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] = 0;
-        }
-    }
-}
-
-void CMatrix::GetSize(uint32_t &rows, uint32_t &columns) const //!< Przekazuje za pomoc¹ referencji informacje o liczbie kolumn i wierszy macierzy z klasy.
+void CMatrix::GetSize(uint32_t& rows, uint32_t& columns) const //!< Przekazuje za pomoc¹ referencji informacje o liczbie kolumn i wierszy macierzy z klasy.
 {
 	rows = this->rows;
 	columns = this->columns;
 }
 
-double &CMatrix::GetElement(uint32_t row, uint32_t column) const
+double& CMatrix::GetElement(uint32_t row, uint32_t column) const
 {
 	if (row < 0 || column < 0 || row >= rows || column >= columns) {
-        throw invalid_argument("GetElement: Requested index is out of range");
+        throw std::invalid_argument("GetElement: Requested index is out of range");
     }
 	return matrix[row][column];
 }
 
-
-double *CMatrix::operator[](uint32_t row) const
+double* CMatrix::operator[](uint32_t row) const
 {
 	if (row < 0 || row >= rows) {
-	    throw invalid_argument("[]: Requested index is out of range");
+	    throw std::invalid_argument("[]: Requested index is out of range");
 	}
 	return matrix[row];
 }
 
-CMatrix CMatrix::operator + (const CMatrix &m) const //!< Operator + bêdzie odpowiedzialny za dodawanie do siebie macierzy.
+CMatrix CMatrix::operator+ (const CMatrix& m) const //!< Operator + bêdzie odpowiedzialny za dodawanie do siebie macierzy.
 {
 	CMatrix mat(*this); //!< Stworzenie macierzy do której bêdzie dodana macierz m.
 	mat.Add(m); //!< Dodanie do stworzonej macierzy macierzy m.
 	return mat; //!< Zwrócenie otrzymanego wyniku.
 }
 
-CMatrix &CMatrix::operator += (const CMatrix &m) //!< Dodanie macierzy do istniej¹cej ju¿ macierzy.
+CMatrix& CMatrix::operator+= (const CMatrix& m) //!< Dodanie macierzy do istniej¹cej ju¿ macierzy.
 {
 	this->Add(m);
 	return *this;
 }
 
-CMatrix CMatrix::operator - (const CMatrix &m) const //!< Analogicznie jak +
+CMatrix CMatrix::operator- (const CMatrix& m) const //!< Analogicznie jak +
 {
 	CMatrix mat(*this);
 	mat.Sub(m);
 	return mat;
 }
 
-CMatrix &CMatrix::operator -= (const CMatrix &m) //!< Analogicznie jak -
+CMatrix& CMatrix::operator-= (const CMatrix& m) //!< Analogicznie jak -
 {
 	this->Sub(m);
 	return *this;
 }
 
-CMatrix CMatrix::operator * (const CMatrix &m) const //!< Mno¿enie macierzy.
+CMatrix CMatrix::operator* (const CMatrix& m) const //!< Mno¿enie macierzy.
 {
 	return this->Mul(m);
 }
 
-CMatrix &CMatrix::operator *= (const CMatrix &m)
+CMatrix& CMatrix::operator*= (const CMatrix& m)
 {
 	*this = this->Mul(m);
 	return *this;
 }
-CMatrix CMatrix::operator * (const double &scalar) const //!< Analogia do +.
+
+CMatrix CMatrix::operator* (const double& scalar) const //!< Analogia do +.
 {
 	CMatrix mat(*this);
 	mat.Mul(scalar);
 	return mat;
 }
-CMatrix &CMatrix::operator *= (const double &scalar) //!< Analogia do +=.
+
+CMatrix& CMatrix::operator*= (const double& scalar) //!< Analogia do +=.
 {
 	this->Mul(scalar);
 	return *this;
 }
-CMatrix CMatrix::operator / (const double &scalar) const //!< Analogia do +.
+
+CMatrix CMatrix::operator/ (const double& scalar) const //!< Analogia do +.
 {
 	CMatrix mat(*this);
 	mat.Div(scalar);
 	return mat;
 }
-CMatrix &CMatrix::operator /= (const double &scalar) //!< Analogia do +=.
+
+CMatrix& CMatrix::operator/= (const double& scalar) //!< Analogia do +=.
 {
 	this->Div(scalar);
 	return *this;
 }
-CMatrix CMatrix::operator -() const //!< Mno¿enie przez skalar o wartoœci -1, mo¿e tez byæ dzielenie.
+
+CMatrix CMatrix::operator-() const //!< Mno¿enie przez skalar o wartoœci -1, mo¿e tez byæ dzielenie.
 {
 	CMatrix mat(*this);
 	mat.Mul(-1);
 	return mat;
 }
+
+std::ostream& operator<< (std::ostream& stream, const CMatrix& m)
+{
+    uint32_t rows, columns;
+    m.GetSize(rows, columns);
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            stream << m.matrix[i][j] << " ";
+        }
+        stream << std::endl;
+    }
+    return stream;
+}
+
+CMatrix CMatrix::operator()() {
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] = 0;
+        }
+    }
+    return *this;
+}
+
+CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const double* mat) {
+    this->~CMatrix();
+    *this = CMatrix(rows, columns, mat);
+    return *this;
+}
+
 
 CMatrix CMatrix::T() const //!< Transpozycja macierzy. 
 {
@@ -263,38 +286,23 @@ CMatrix CMatrix::T() const //!< Transpozycja macierzy.
 
 CVector::CVector(uint32_t columns) : CMatrix(1, columns) {} //!< Wektor "poziomy" o 1 wierszu.
 
-CVector::CVector(uint32_t rows, uint32_t flag) : CMatrix (rows, 1){}
+CVector::CVector(uint32_t rows, uint32_t column) : CMatrix (rows, 1){}
 
-CVector::CVector(uint32_t columns, double *mat) : CMatrix(1, columns, mat) {} //!< Wektor poziomy o jednym wierszu.
+CVector::CVector(uint32_t columns, double* mat) : CMatrix(1, columns, mat) {} //!< Wektor poziomy o jednym wierszu.
 
-CVector::CVector(uint32_t rows, uint32_t flag, double *mat) : CMatrix(rows, 1, mat) {}
-
-void CVector::SetMatrixColumn(uint32_t column, CMatrix &m)
-{
-	uint32_t rows, columns;
-	m.GetSize(rows, columns);
-
-	for (uint32_t i = 0; i < rows; i++)
-	{
-		for (uint32_t j = 0; j < columns; j++)
-			{
-				if (column == j)
-					m[i][j] = matrix[0][i];
-			}
-	}
-
-}
+CVector::CVector(uint32_t rows, uint32_t column, double* mat) : CMatrix(rows, 1, mat) {}
 
 CVector CVector::Tv() const
 {
 	uint32_t flag = 0;
 	CVector vector_t(columns, flag);
-		for (uint32_t i = 0; i < columns; i++)
-			vector_t.matrix[i][0] = matrix[0][i];
+	for (uint32_t i = 0; i < columns; i++) {
+        vector_t.matrix[i][0] = matrix[0][i];
+	}
 	return vector_t;
 }
 
-CVector &CVector::operator = (const CMatrix &m) //!< Jako, ¿e wartoœæ macierzy w klasie przechowywana jest w polu private, muszê uzyskaæ o niej informacje za pomoc¹ metod publicznych.
+CVector& CVector::operator= (const CMatrix& m) //!< Jako, ¿e wartoœæ macierzy w klasie przechowywana jest w polu private, muszê uzyskaæ o niej informacje za pomoc¹ metod publicznych.
 {
 	uint32_t rows, columns;
     m.GetSize(rows, columns);
@@ -310,26 +318,3 @@ CVector &CVector::operator = (const CMatrix &m) //!< Jako, ¿e wartoœæ macierzy w
     }
 	return *this;
 }
-
-ostream& operator<< (ostream &stream, const CMatrix &m)
-{
-	uint32_t rows, columns;
-	m.GetSize(rows, columns);
-	for (uint32_t i = 0; i < rows; i++) {
-		for (uint32_t j = 0; j < columns; j++) {
-			stream << m.matrix[i][j] << " ";
-		}
-		stream << endl;
-	}
-	return stream;
-}
-
-void CMatrix::save()
-{
-//	CMatrix matrix(rows, columns, matrix);
-	ofstream file;
-	file.open("C:\\Users\\Ganofir\\Documents\\Visual Studio 2017\\Projects\\aproksymacja2\\aproksymacja\\aproksymacja\\exe2_result.txt", ios::out | ios::app);
-	file << matrix << endl;
-	file.close();
-}
-
