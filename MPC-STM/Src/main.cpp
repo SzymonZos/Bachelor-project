@@ -17,6 +17,7 @@ static void send_string(const uint8_t* s);
 double minControlValue = -0.5;
 double maxControlValue = 0.5;
 uint8_t buf[1024];
+std::map<std::string, std::vector<double>> dict;
 
 typedef enum {
     success,
@@ -125,7 +126,35 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if(GPIO_Pin == B1_Pin) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-//        receive_new_system_parameters();
+        receive_new_system_parameters();
+
+        std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
+        std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
+        std::smatch fullMatch;
+        std::string::const_iterator iterator(pythonString.cbegin());
+
+        while(std::regex_search(iterator, pythonString.cend(), fullMatch, pattern)) {
+            valuesMatch = fullMatch[3].str();
+            std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
+            valuesMatch.pop_back(); // trim ]
+            valuesMatch.erase(0, 1); // trim [
+            if(fullMatch[1].str().find('A') != std::string::npos) {
+                stringToDouble(valuesMatch, dict["A"]);
+            }
+            else if(fullMatch[1].str().find('B') != std::string::npos) {
+                stringToDouble(valuesMatch, dict["B"]);
+            }
+            else if(fullMatch[1].str().find('C') != std::string::npos) {
+                stringToDouble(valuesMatch, dict["C"]);
+            }
+            else if(fullMatch[1].str().find("set") != std::string::npos) {
+                stringToDouble(valuesMatch, dict["set"]);
+            }
+            else if(fullMatch[1].str().find("control") != std::string::npos) {
+                stringToDouble(valuesMatch, dict["control"]);
+            }
+            iterator = fullMatch.suffix().first;
+        }
     }
 }
 
@@ -143,35 +172,7 @@ int main() {
     MX_GPIO_Init();
     MX_USART2_UART_Init();
 
-    std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
-    std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
-    std::smatch fullMatch;
-    std::string::const_iterator iterator(pythonString.cbegin());
-    std::map<std::string, std::vector<double>> dict;
-
-    while(std::regex_search(iterator, pythonString.cend(), fullMatch, pattern)) {
-        valuesMatch = fullMatch[3].str();
-        std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
-        valuesMatch.pop_back(); // trim ]
-        valuesMatch.erase(0, 1); // trim [
-        if(fullMatch[1].str().find('A') != std::string::npos) {
-            stringToDouble(valuesMatch, dict["A"]);
-        }
-        else if(fullMatch[1].str().find('B') != std::string::npos) {
-            stringToDouble(valuesMatch, dict["B"]);
-        }
-        else if(fullMatch[1].str().find('C') != std::string::npos) {
-            stringToDouble(valuesMatch, dict["C"]);
-        }
-        else if(fullMatch[1].str().find("set") != std::string::npos) {
-            stringToDouble(valuesMatch, dict["set"]);
-        }
-        else if(fullMatch[1].str().find("control") != std::string::npos) {
-            stringToDouble(valuesMatch, dict["control"]);
-        }
-        iterator = fullMatch.suffix().first;
-    }
-
+    // TODO: somehow handle this to configure upon pressing button
     size_t dimension = static_cast<size_t>(std::sqrt(dict["A"].size()));
     CMatrix A(dimension, dimension, dict["A"].data());
     CVector B(dict["B"].size(), 1, dict["B"].data());

@@ -16,7 +16,7 @@ x = np.zeros((4, 1))
 y = []
 print(systemParametersToSend)
 
-with serial.Serial('COM3', 115200, timeout=10) as ser:
+with serial.Serial('COM3', 115200, timeout=3) as ser:
     if changeParameters:
         ser.write(bytes([len(systemParametersToSend)]))
         ser.write(systemParametersToSend.encode())
