@@ -44,6 +44,7 @@ public:
     [[nodiscard]] CMatrix T() const;
 
     CMatrix operator()();
+    CMatrix operator()(uint32_t rows, uint32_t columns);
     CMatrix operator()(uint32_t rows, uint32_t columns, const double* mat);
     CMatrix operator()(uint32_t rows, uint32_t columns, const std::initializer_list<double>& list);
 

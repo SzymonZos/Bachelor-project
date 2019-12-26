@@ -186,6 +186,15 @@ CMatrix CMatrix::operator()() {
 }
 
 
+CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns) {
+    this->~CMatrix();
+    this->rows = rows;
+    this->columns = columns;
+    make_matrix();
+    return *this;
+}
+
+
 CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const double* mat) {
     this->~CMatrix();
     this->rows = rows;
@@ -307,7 +316,6 @@ CVector::CVector(uint32_t columns, double* mat) : CMatrix(1, columns, mat) {}
 
 
 CVector::CVector(uint32_t rows, uint32_t column, double* mat) : CMatrix(rows, 1, mat) {}
-
 
 CVector& CVector::operator= (const CMatrix& m) {
     uint32_t rows, columns;

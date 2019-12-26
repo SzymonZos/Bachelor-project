@@ -14,17 +14,18 @@ static void MX_GPIO_Init();
 static void MX_USART2_UART_Init();
 static void send_string(const uint8_t* s);
 
+// TODO: move this atrocity to class
 double minControlValue = -0.5;
 double maxControlValue = 0.5;
+double w = 4;
 uint8_t buf[1024];
 std::map<std::string, std::vector<double>> dict;
+CMatrix A(4, 4);
+CVector B(4, 1);
+CVector C(4);
+CVector xk(4, 1);
 
-typedef enum {
-    success,
-    failure
-} result;
-
-result calculateOptimizationMatrices(const CMatrix& A, const CVector& B, const CVector& C, const CVector& xk, const double r, CMatrix& H, CMatrix& W) {
+void calculateOptimizationMatrices(CMatrix& H, CMatrix& W) {
     CMatrix fi(3, 3), Rw(3, 3);
     CVector F(3, 1), Rs(3,1);
 
@@ -41,19 +42,17 @@ result calculateOptimizationMatrices(const CMatrix& A, const CVector& B, const C
     F[1][0] = (C * A * A * xk)[0][0];
     F[2][0] = (C * A * A * A * xk)[0][0];
 
-    Rs[0][0] = r; Rs[1][0] = r; Rs[2][0] = r;
+    Rs[0][0] = w; Rs[1][0] = w; Rs[2][0] = w;
 
     H = fi.T() * fi + Rw;
     W = fi.T() * (F - Rs);
-
-    return success;
 }
 
-result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const CVector& xk, CVector& v, const double step) {
+void calculateProjectedGradientStep(const CMatrix& H, const CMatrix& W, CVector& v, const double step) {
     uint32_t rows, columns;
     v.GetSize(rows, columns);
     CVector gradient(rows, 1);
-    gradient = H * v + F;
+    gradient = H * v + W;
     v -= gradient * step;
     for (uint32_t i = 0; i < rows; i++) {
         if (v[i][0] < minControlValue) {
@@ -63,10 +62,9 @@ result calculateProjectedGradientStep(const CMatrix& H, const CMatrix& F, const 
             v[i][0] = maxControlValue;
         }
     }
-    return success;
 }
 
-double fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, const CVector& xk, double r) {
+double fastGradientMethod() {
     const uint32_t predictionHorizon = 3;
     double eps = 0.01;
     double temp[predictionHorizon] = {0, 0, 0};
@@ -76,9 +74,9 @@ double fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, 
     CMatrix H(predictionHorizon, predictionHorizon), W(predictionHorizon, 1);
     CMatrix J(1,1), J_prev(1,1);
 
-    calculateOptimizationMatrices(A, B, C, xk, r, H, W);
+    calculateOptimizationMatrices(H, W);
     for (uint32_t i = 0; i < 100; i++) {
-        calculateProjectedGradientStep(H, W, xk, v, 0.1);
+        calculateProjectedGradientStep(H, W, v, 0.1);
         J_prev = J;
         J = v.T() * H * v / 2 + v.T() * W;
         if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
@@ -101,24 +99,9 @@ void stringToDouble(const std::string& data_reference, std::vector<double>& data
     } while(begin != end);
 }
 
-template<typename __Map>
-void print_map(const __Map& m)
-{
-    std::cout << "{";
-    for(const auto& p : m) {
-        std::cout << '\'' << p.first << "': [";
-        for(const auto& v : p.second) {
-            std::cout << v << ", ";
-        }
-        std::cout << "\b\b], ";
-    }
-    std::cout << "\b\b}\n";
-}
-
-void receive_new_system_parameters() {
+void receive_data(uint16_t timeout) {
     uint8_t buf_size = 0;
-    // 20s wait after pressing button to read data sent from PC
-    HAL_UART_Receive(&huart2, &buf_size, 1, 2000);
+    HAL_UART_Receive(&huart2, &buf_size, 1, timeout);
     HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), buf_size, 100);
 }
 
@@ -126,7 +109,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if(GPIO_Pin == B1_Pin) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-        receive_new_system_parameters();
+        // 20s wait after pressing button to read data sent from PC
+        receive_data(20000);
 
         std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
         std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
@@ -155,6 +139,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
             }
             iterator = fullMatch.suffix().first;
         }
+        // TODO: somehow handle this to configure upon pressing button
+        size_t dimension = static_cast<size_t>(std::sqrt(dict["A"].size()));
+        A(dimension, dimension, dict["A"].data());
+        B(dict["B"].size(), 1, dict["B"].data());
+        C(1, dict["C"].size(), dict["C"].data());
+        xk(dict["C"].size(), 1);
+        w = dict["set"][0];
+        minControlValue = dict["control"][0];
+        maxControlValue = dict["control"][1];
     }
 }
 
@@ -162,8 +155,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
 
 int main() {
-    char* pBuf;
+    char* pBuf, *end;
     uint8_t buf_size = 0;
+    uint16_t iter = 0;
     double v = 0;
 
     // Reset of all peripherals, Initializes the Flash interface and the Systick.
@@ -171,18 +165,6 @@ int main() {
     SystemClock_Config();
     MX_GPIO_Init();
     MX_USART2_UART_Init();
-
-    // TODO: somehow handle this to configure upon pressing button
-    size_t dimension = static_cast<size_t>(std::sqrt(dict["A"].size()));
-    CMatrix A(dimension, dimension, dict["A"].data());
-    CVector B(dict["B"].size(), 1, dict["B"].data());
-    CVector C(dict["C"].size(), dict["C"].data());
-    CVector xk(dict["C"].size(), 1);
-    double w = dict["set"][0];
-    minControlValue = dict["control"][0];
-    maxControlValue = dict["control"][1];
-    char* end;
-    uint16_t iter = 0;
 
     while (true) {
         HAL_UART_Receive(&huart2, &buf_size, 1, 100);
@@ -193,7 +175,7 @@ int main() {
             pBuf = end;
             xk[iter][0] = std::strtod(pBuf, &end);
         }
-        v = fastGradientMethod(A, B, C, xk, w);
+        v = fastGradientMethod();
         sprintf(reinterpret_cast<char*>(buf), "%f\n", v);
         send_string(buf);
     }
