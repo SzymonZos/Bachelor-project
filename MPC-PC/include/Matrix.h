@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <iostream>
 #include <fstream>
+#include <initializer_list>
 
 class CMatrix
 {
@@ -21,6 +22,7 @@ private:
      */
 	void Div(const double& scalar);
 public:
+    CMatrix() = delete;
     /**
      * Konstruktor pustej macierzy
      * \param[in] rows      Iloœæ wierszy
@@ -48,11 +50,12 @@ public:
     CMatrix(uint32_t rows, uint32_t columns, const double* mat);
     CMatrix(const CMatrix& M);
 
+    CMatrix(uint32_t rows, uint32_t columns, std::initializer_list<double> list);
+
     CMatrix& operator = (const CMatrix& m);
     ~CMatrix();
 
 	void inverse();
-	void zero();
 	void GetSize(uint32_t& rows, uint32_t& columns) const;
     [[nodiscard]] double& GetElement(uint32_t row, uint32_t column) const;
 

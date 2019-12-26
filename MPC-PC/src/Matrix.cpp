@@ -117,6 +117,20 @@ CMatrix::CMatrix(const CMatrix& M) : rows(M.rows), columns(M.columns) //!< Konst
 	}
 }
 
+CMatrix::CMatrix(uint32_t rows, uint32_t columns, std::initializer_list<double> list) : rows(rows), columns(columns) {
+    auto iter = list.begin();
+    matrix = new double*[rows];
+    for (uint32_t i = 0; i < rows; i++) {
+        matrix[i] = new double[columns];
+    }
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] = *iter++;
+        }
+    }
+}
+
+
 CMatrix::~CMatrix() //!< Destruktor, usuwam osobno wiersze i kolumny.
 {
 	for (uint32_t i = 0; i < rows; i++) {
@@ -268,7 +282,18 @@ CMatrix CMatrix::operator()() {
 
 CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const double* mat) {
     this->~CMatrix();
-    *this = CMatrix(rows, columns, mat);
+    this->rows = rows;
+    this->columns = columns;
+    matrix = new double*[rows];
+
+    for (uint32_t i = 0; i < rows; i++) {
+        matrix[i] = new double[columns];
+    }
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] = mat[i * columns + j];
+        }
+    }
     return *this;
 }
 

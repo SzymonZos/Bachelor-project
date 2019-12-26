@@ -148,6 +148,9 @@ int main() {
     double w = dict["set"][0];
     minControlValue = dict["control"][0];
     maxControlValue = dict["control"][1];
-    fastGradientMethod(A, B, C, w);
+//    fastGradientMethod(A, B, C, w);
+    double dupa[4] = {9, 8, 7, 6};
+    A(2, 2, dupa);
+    std::cout << A;
     return 0;
 }
