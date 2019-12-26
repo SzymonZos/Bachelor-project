@@ -111,43 +111,44 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
         // 20s wait after pressing button to read data sent from PC
         receive_data(20000);
-
-        std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
-        std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
-        std::smatch fullMatch;
-        std::string::const_iterator iterator(pythonString.cbegin());
-
-        while(std::regex_search(iterator, pythonString.cend(), fullMatch, pattern)) {
-            valuesMatch = fullMatch[3].str();
-            std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
-            valuesMatch.pop_back(); // trim ]
-            valuesMatch.erase(0, 1); // trim [
-            if(fullMatch[1].str().find('A') != std::string::npos) {
-                stringToDouble(valuesMatch, dict["A"]);
-            }
-            else if(fullMatch[1].str().find('B') != std::string::npos) {
-                stringToDouble(valuesMatch, dict["B"]);
-            }
-            else if(fullMatch[1].str().find('C') != std::string::npos) {
-                stringToDouble(valuesMatch, dict["C"]);
-            }
-            else if(fullMatch[1].str().find("set") != std::string::npos) {
-                stringToDouble(valuesMatch, dict["set"]);
-            }
-            else if(fullMatch[1].str().find("control") != std::string::npos) {
-                stringToDouble(valuesMatch, dict["control"]);
-            }
-            iterator = fullMatch.suffix().first;
-        }
-        // TODO: somehow handle this to configure upon pressing button
-        size_t dimension = static_cast<size_t>(std::sqrt(dict["A"].size()));
-        A(dimension, dimension, dict["A"].data());
-        B(dict["B"].size(), 1, dict["B"].data());
-        C(1, dict["C"].size(), dict["C"].data());
-        xk(dict["C"].size(), 1);
-        w = dict["set"][0];
-        minControlValue = dict["control"][0];
-        maxControlValue = dict["control"][1];
+        sprintf(reinterpret_cast<char*>(buf), "dupadupa\n");
+        send_string(buf);
+//        std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
+//        std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
+//        std::smatch fullMatch;
+//        std::string::const_iterator iterator(pythonString.cbegin());
+//
+//        while(std::regex_search(iterator, pythonString.cend(), fullMatch, pattern)) {
+//            valuesMatch = fullMatch[3].str();
+//            std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
+//            valuesMatch.pop_back(); // trim ]
+//            valuesMatch.erase(0, 1); // trim [
+//            if(fullMatch[1].str().find('A') != std::string::npos) {
+//                stringToDouble(valuesMatch, dict["A"]);
+//            }
+//            else if(fullMatch[1].str().find('B') != std::string::npos) {
+//                stringToDouble(valuesMatch, dict["B"]);
+//            }
+//            else if(fullMatch[1].str().find('C') != std::string::npos) {
+//                stringToDouble(valuesMatch, dict["C"]);
+//            }
+//            else if(fullMatch[1].str().find("set") != std::string::npos) {
+//                stringToDouble(valuesMatch, dict["set"]);
+//            }
+//            else if(fullMatch[1].str().find("control") != std::string::npos) {
+//                stringToDouble(valuesMatch, dict["control"]);
+//            }
+//            iterator = fullMatch.suffix().first;
+//        }
+//        // TODO: somehow handle this to configure upon pressing button
+//        size_t dimension = static_cast<size_t>(std::sqrt(dict["A"].size()));
+//        A(dimension, dimension, dict["A"].data());
+//        B(dict["B"].size(), 1, dict["B"].data());
+//        C(1, dict["C"].size(), dict["C"].data());
+//        xk(dict["C"].size(), 1);
+//        w = dict["set"][0];
+//        minControlValue = dict["control"][0];
+//        maxControlValue = dict["control"][1];
     }
 }
 
@@ -272,7 +273,7 @@ static void MX_GPIO_Init() {
 void Error_Handler(void){}
 
 void send_string(const uint8_t* s) {
-    HAL_UART_Transmit(&huart2, const_cast<uint8_t *>(s), strlen(reinterpret_cast<const char*>(s)), 1000);
+    HAL_UART_Transmit(&huart2, const_cast<uint8_t*>(s), strlen(reinterpret_cast<const char*>(s)), 1000);
 }
 
 
