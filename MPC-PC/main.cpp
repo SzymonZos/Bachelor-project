@@ -152,5 +152,9 @@ int main() {
     double dupa[4] = {9, 8, 7, 6};
     A(2, 2, dupa);
     std::cout << A;
+    CMatrix kupa(2, 2, {1, 2, 3, 4});
+    std::cout << kupa;
+    kupa(3,3,{6, 7, 8, 3, 5, 0, 2, 4, 5});
+    std::cout << kupa;
     return 0;
 }
