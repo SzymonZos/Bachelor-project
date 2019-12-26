@@ -2,7 +2,7 @@ import serial
 import numpy as np
 import matplotlib.pyplot as plt
 
-changeParameters = False
+changeParameters = True
 systemParameters = {'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
                     'B': [0, 0, 1, 0],
                     'C': [1, 1, 0, 0],

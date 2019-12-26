@@ -16,6 +16,7 @@ static void send_string(const uint8_t* s);
 
 double minControlValue = -0.5;
 double maxControlValue = 0.5;
+uint8_t buf[1024];
 
 typedef enum {
     success,
@@ -113,11 +114,25 @@ void print_map(const __Map& m)
     std::cout << "\b\b}\n";
 }
 
+void receive_new_system_parameters() {
+    uint8_t buf_size = 0;
+    // 20s wait after pressing button to read data sent from PC
+    HAL_UART_Receive(&huart2, &buf_size, 1, 2000);
+    HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), buf_size, 100);
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if(GPIO_Pin == B1_Pin) {
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+//        receive_new_system_parameters();
+    }
+}
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
 
 int main() {
-    uint8_t buf[1024];
     char* pBuf;
     uint8_t buf_size = 0;
     double v = 0;
@@ -127,10 +142,6 @@ int main() {
     SystemClock_Config();
     MX_GPIO_Init();
     MX_USART2_UART_Init();
-
-    // 20s wait after STM reboot to read data sent from PC
-    HAL_UART_Receive(&huart2, &buf_size, 1, 20000);
-    HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), buf_size, 100);
 
     std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
     std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
@@ -254,12 +265,25 @@ static void MX_GPIO_Init() {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
+    /*Configure GPIO pin : button_0_Pin */
+    GPIO_InitStruct.Pin = button_0_Pin;
+    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    HAL_GPIO_Init(button_0_GPIO_Port, &GPIO_InitStruct);
+
     //Configure GPIO pin : LD2_Pin
     GPIO_InitStruct.Pin = LD2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+
+    /* EXTI interrupt init*/
+    HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
 void Error_Handler(void){}
