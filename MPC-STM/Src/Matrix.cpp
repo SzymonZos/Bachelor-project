@@ -1,72 +1,8 @@
 #include "Matrix.h"
 
 
-void CMatrix::Add(const CMatrix& m) {
-    if (rows != m.rows || columns != m.columns) {
-        throw std::invalid_argument("Add: Mismatch of matrices' dimensions");
-    }
-    for (uint32_t i = 0; i < rows; i++) {
-        for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] += m.matrix[i][j];
-        }
-    }
-}
-
-
-void CMatrix::Sub(const CMatrix& m) {
-    if (rows != m.rows || columns != m.columns) {
-        throw std::invalid_argument("Sub: Mismatch of matrices' dimensions");
-    }
-    for (uint32_t i = 0; i < rows; i++) {
-        for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] -= m.matrix[i][j];
-        }
-    }
-}
-
-
-CMatrix CMatrix::Mul(const CMatrix& m) const {
-    if (columns != m.rows) {
-        throw std::invalid_argument("Mul: Mismatch of matrices' dimensions");
-    }
-    CMatrix productMatrix(rows, m.columns);
-    for (uint32_t i = 0; i < productMatrix.rows; i++) {
-        for (uint32_t j = 0; j < productMatrix.columns; j++) {
-            for (uint32_t k = 0; k < columns; k++) {
-                productMatrix.matrix[i][j] += (matrix[i][k] * m.matrix[k][j]);
-            }
-        }
-    }
-    return productMatrix;
-}
-
-
-void CMatrix::Mul(const double& scalar) {
-    for (uint32_t i = 0; i < rows; i++) {
-        for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] *= scalar;
-        }
-    }
-}
-
-
-void CMatrix::Div(const double& scalar) {
-    if (scalar == 0) {
-        throw std::invalid_argument("Div: Cannot divide by 0");
-    }
-    for (uint32_t i = 0; i < rows; i++) {
-        for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] /= scalar;
-        }
-    }
-}
-
-
 CMatrix::CMatrix(uint32_t rows, uint32_t columns) : rows(rows), columns(columns) {
-    matrix = new double*[rows];
-    for (uint32_t i = 0; i < rows; i++) {
-        matrix[i] = new double[columns];
-    }
+    make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = 0;
@@ -76,10 +12,7 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns) : rows(rows), columns(columns)
 
 
 CMatrix::CMatrix(uint32_t rows, uint32_t columns, double** mat) : rows(rows), columns(columns) {
-    matrix = new double*[rows];
-    for (uint32_t i = 0; i < rows; i++) {
-        matrix[i] = new double[columns];
-    }
+    make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = mat[i][j];
@@ -89,10 +22,7 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, double** mat) : rows(rows), co
 
 
 CMatrix::CMatrix(uint32_t rows, uint32_t columns, const double* mat) : rows(rows), columns(columns) {
-    matrix = new double*[rows];
-    for (uint32_t i = 0; i < rows; i++) {
-        matrix[i] = new double[columns];
-    }
+    make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = mat[i * columns + j];
@@ -102,10 +32,7 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, const double* mat) : rows(rows
 
 
 CMatrix::CMatrix(const CMatrix& M) : rows(M.rows), columns(M.columns) {
-    matrix = new double*[rows];
-    for (uint32_t i = 0; i < rows; i++) {
-        matrix[i] = new double[columns];
-    }
+    make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = M.matrix[i][j];
@@ -116,10 +43,7 @@ CMatrix::CMatrix(const CMatrix& M) : rows(M.rows), columns(M.columns) {
 
 CMatrix::CMatrix(uint32_t rows, uint32_t columns, std::initializer_list<double> list) : rows(rows), columns(columns) {
     auto iter = list.begin();
-    matrix = new double*[rows];
-    for (uint32_t i = 0; i < rows; i++) {
-        matrix[i] = new double[columns];
-    }
+    make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = *iter++;
@@ -133,16 +57,6 @@ CMatrix::~CMatrix() {
         delete[] matrix[i];
     }
     delete[] matrix;
-}
-
-
-CMatrix& CMatrix:: operator= (const CMatrix& m) {
-    for (uint32_t i = 0; i < rows; i++) {
-        for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] = m.matrix[i][j];
-        }
-    }
-    return *this;
 }
 
 
@@ -165,6 +79,19 @@ double* CMatrix::operator[](uint32_t row) const {
         throw std::invalid_argument("[]: Requested index is out of range");
     }
     return matrix[row];
+}
+
+
+CMatrix& CMatrix:: operator= (const CMatrix& m) {
+    if (this == &m) {
+        return *this;
+    }
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] = m.matrix[i][j];
+        }
+    }
+    return *this;
 }
 
 
@@ -238,16 +165,14 @@ CMatrix CMatrix::operator-() const {
 }
 
 
-std::ostream& operator<< (std::ostream& stream, const CMatrix& m) {
-    uint32_t rows, columns;
-    m.GetSize(rows, columns);
+CMatrix CMatrix::T() const {
+    CMatrix matrix_t(columns, rows);
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
-            stream << m.matrix[i][j] << " ";
+            matrix_t.matrix[j][i] = matrix[i][j];
         }
-        stream << std::endl;
     }
-    return stream;
+    return matrix_t;
 }
 
 
@@ -265,11 +190,7 @@ CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const double* mat) 
     this->~CMatrix();
     this->rows = rows;
     this->columns = columns;
-    matrix = new double*[rows];
-
-    for (uint32_t i = 0; i < rows; i++) {
-        matrix[i] = new double[columns];
-    }
+    make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = mat[i * columns + j];
@@ -284,11 +205,7 @@ CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, std::initializer_li
     this->rows = rows;
     this->columns = columns;
     auto iter = list.begin();
-    matrix = new double*[rows];
-
-    for (uint32_t i = 0; i < rows; i++) {
-        matrix[i] = new double[columns];
-    }
+    make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
             matrix[i][j] = *iter++;
@@ -298,14 +215,85 @@ CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, std::initializer_li
 }
 
 
-CMatrix CMatrix::T() const {
-    CMatrix matrix_t(columns, rows);
+std::ostream& operator<< (std::ostream& stream, const CMatrix& m) {
+    uint32_t rows, columns;
+    m.GetSize(rows, columns);
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
-            matrix_t.matrix[j][i] = matrix[i][j];
+            stream << m.matrix[i][j] << " ";
+        }
+        stream << std::endl;
+    }
+    return stream;
+}
+
+
+void CMatrix::make_matrix() {
+    matrix = new double*[rows];
+    for (uint32_t i = 0; i < rows; i++) {
+        matrix[i] = new double[columns];
+    }
+}
+
+
+void CMatrix::Add(const CMatrix& m) {
+    if (rows != m.rows || columns != m.columns) {
+        throw std::invalid_argument("Add: Mismatch of matrices' dimensions");
+    }
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] += m.matrix[i][j];
         }
     }
-    return matrix_t;
+}
+
+
+void CMatrix::Sub(const CMatrix& m) {
+    if (rows != m.rows || columns != m.columns) {
+        throw std::invalid_argument("Sub: Mismatch of matrices' dimensions");
+    }
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] -= m.matrix[i][j];
+        }
+    }
+}
+
+
+CMatrix CMatrix::Mul(const CMatrix& m) const {
+    if (columns != m.rows) {
+        throw std::invalid_argument("Mul: Mismatch of matrices' dimensions");
+    }
+    CMatrix productMatrix(rows, m.columns);
+    for (uint32_t i = 0; i < productMatrix.rows; i++) {
+        for (uint32_t j = 0; j < productMatrix.columns; j++) {
+            for (uint32_t k = 0; k < columns; k++) {
+                productMatrix.matrix[i][j] += (matrix[i][k] * m.matrix[k][j]);
+            }
+        }
+    }
+    return productMatrix;
+}
+
+
+void CMatrix::Mul(const double& scalar) {
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] *= scalar;
+        }
+    }
+}
+
+
+void CMatrix::Div(const double& scalar) {
+    if (scalar == 0) {
+        throw std::invalid_argument("Div: Cannot divide by 0");
+    }
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] /= scalar;
+        }
+    }
 }
 
 

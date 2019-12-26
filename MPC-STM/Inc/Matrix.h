@@ -8,7 +8,7 @@ class CMatrix {
 protected:
     uint32_t rows;
     uint32_t columns;
-    double** matrix;
+    double** matrix{};
 
 public:
     CMatrix() = delete;
@@ -50,6 +50,7 @@ public:
     friend std::ostream& operator<< (std::ostream& stream, const CMatrix& m);
 
 private:
+    void make_matrix();
     void Add(const CMatrix& m);
     void Sub(const CMatrix& m);
     [[nodiscard]] CMatrix Mul(const CMatrix& m) const;

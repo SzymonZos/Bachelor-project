@@ -149,12 +149,12 @@ int main() {
     minControlValue = dict["control"][0];
     maxControlValue = dict["control"][1];
 //    fastGradientMethod(A, B, C, w);
-    double dupa[4] = {9, 8, 7, 6};
-    A(2, 2, dupa);
+    double temp1[4] = {9, 8, 7, 6};
+    A(2, 2, temp1);
     std::cout << A;
-    CMatrix kupa(2, 2, {1, 2, 3, 4});
-    std::cout << kupa;
-    kupa(3,3,{6, 7, 8, 3, 5, 0, 2, 4, 5});
-    std::cout << kupa;
+    CMatrix temp2(2, 2, {1, 2, 3, 4});
+    std::cout << temp2;
+    temp2(3, 3, {6, 7, 8, 3, 5, 0, 2, 4, 5});
+    std::cout << temp2();
     return 0;
 }
