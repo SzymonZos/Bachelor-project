@@ -15,7 +15,7 @@ public:
     CMatrix(uint32_t rows, uint32_t columns);
     CMatrix(uint32_t rows, uint32_t columns, double** mat);
     CMatrix(uint32_t rows, uint32_t columns, const double* mat);
-    CMatrix(uint32_t rows, uint32_t columns, std::initializer_list<double> list);
+    CMatrix(uint32_t rows, uint32_t columns, const std::initializer_list<double>& list);
     CMatrix(const CMatrix& M);
     ~CMatrix();
 
@@ -45,7 +45,7 @@ public:
 
     CMatrix operator()();
     CMatrix operator()(uint32_t rows, uint32_t columns, const double* mat);
-    CMatrix operator()(uint32_t rows, uint32_t columns, std::initializer_list<double> list);
+    CMatrix operator()(uint32_t rows, uint32_t columns, const std::initializer_list<double>& list);
 
     friend std::ostream& operator<< (std::ostream& stream, const CMatrix& m);
 

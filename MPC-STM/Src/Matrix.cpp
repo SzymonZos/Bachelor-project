@@ -41,7 +41,7 @@ CMatrix::CMatrix(const CMatrix& M) : rows(M.rows), columns(M.columns) {
 }
 
 
-CMatrix::CMatrix(uint32_t rows, uint32_t columns, std::initializer_list<double> list) : rows(rows), columns(columns) {
+CMatrix::CMatrix(uint32_t rows, uint32_t columns, const std::initializer_list<double>& list) : rows(rows), columns(columns) {
     auto iter = list.begin();
     make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
@@ -200,7 +200,7 @@ CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const double* mat) 
 }
 
 
-CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, std::initializer_list<double> list) {
+CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const std::initializer_list<double>& list) {
     this->~CMatrix();
     this->rows = rows;
     this->columns = columns;
