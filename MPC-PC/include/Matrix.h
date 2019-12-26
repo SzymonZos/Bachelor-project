@@ -19,7 +19,7 @@ public:
     CMatrix(const CMatrix& M);
     ~CMatrix();
 
-	void GetSize(uint32_t& rows, uint32_t& columns) const;
+    void GetSize(uint32_t& rows, uint32_t& columns) const;
     [[nodiscard]] double& GetElement(uint32_t row, uint32_t column) const;
 
     double* operator[](uint32_t row) const;
@@ -37,8 +37,8 @@ public:
     CMatrix operator* (const double& scalar) const;
     CMatrix& operator*= (const double& scalar);
 
-	CMatrix operator/ (const double& scalar) const;
-	CMatrix& operator/= (const double& scalar);
+    CMatrix operator/ (const double& scalar) const;
+    CMatrix& operator/= (const double& scalar);
 
     CMatrix operator-() const;
     [[nodiscard]] CMatrix T() const;
@@ -57,12 +57,13 @@ private:
     void Div(const double& scalar);
 };
 
-class CVector : public CMatrix
-{
+
+class CVector : public CMatrix {
+
 public:
-	explicit CVector(uint32_t columns);
-	CVector(uint32_t rows, uint32_t column);
-	CVector(uint32_t columns, double* mat);
+    explicit CVector(uint32_t columns);
+    CVector(uint32_t rows, uint32_t column);
+    CVector(uint32_t columns, double* mat);
     CVector(uint32_t rows, uint32_t flag, double* mat);
     CVector& operator= (const CMatrix& m);
 };
