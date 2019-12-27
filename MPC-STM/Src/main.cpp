@@ -19,11 +19,12 @@ double minControlValue = -0.5;
 double maxControlValue = 0.5;
 double w = 4;
 uint8_t buf[1024];
-std::map<std::string, std::vector<double>> dict;
 CMatrix A(4, 4);
 CVector B(4, 1);
 CVector C(4);
 CVector xk(4, 1);
+uint16_t xk_size;
+static bool isNewDataGoingToBeSend;
 
 void calculateOptimizationMatrices(CMatrix& H, CMatrix& W) {
     CMatrix fi(3, 3), Rw(3, 3);
@@ -109,46 +110,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if(GPIO_Pin == B1_Pin) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-        // 20s wait after pressing button to read data sent from PC
-        receive_data(20000);
-        sprintf(reinterpret_cast<char*>(buf), "dupadupa\n");
-        send_string(buf);
-//        std::string pythonString = reinterpret_cast<char*>(buf), valuesMatch;
-//        std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
-//        std::smatch fullMatch;
-//        std::string::const_iterator iterator(pythonString.cbegin());
-//
-//        while(std::regex_search(iterator, pythonString.cend(), fullMatch, pattern)) {
-//            valuesMatch = fullMatch[3].str();
-//            std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
-//            valuesMatch.pop_back(); // trim ]
-//            valuesMatch.erase(0, 1); // trim [
-//            if(fullMatch[1].str().find('A') != std::string::npos) {
-//                stringToDouble(valuesMatch, dict["A"]);
-//            }
-//            else if(fullMatch[1].str().find('B') != std::string::npos) {
-//                stringToDouble(valuesMatch, dict["B"]);
-//            }
-//            else if(fullMatch[1].str().find('C') != std::string::npos) {
-//                stringToDouble(valuesMatch, dict["C"]);
-//            }
-//            else if(fullMatch[1].str().find("set") != std::string::npos) {
-//                stringToDouble(valuesMatch, dict["set"]);
-//            }
-//            else if(fullMatch[1].str().find("control") != std::string::npos) {
-//                stringToDouble(valuesMatch, dict["control"]);
-//            }
-//            iterator = fullMatch.suffix().first;
-//        }
-//        // TODO: somehow handle this to configure upon pressing button
-//        size_t dimension = static_cast<size_t>(std::sqrt(dict["A"].size()));
-//        A(dimension, dimension, dict["A"].data());
-//        B(dict["B"].size(), 1, dict["B"].data());
-//        C(1, dict["C"].size(), dict["C"].data());
-//        xk(dict["C"].size(), 1);
-//        w = dict["set"][0];
-//        minControlValue = dict["control"][0];
-//        maxControlValue = dict["control"][1];
+        isNewDataGoingToBeSend = true;
     }
 }
 
@@ -160,6 +122,12 @@ int main() {
     uint8_t buf_size = 0;
     uint16_t iter = 0;
     double v = 0;
+    std::string pythonString, valuesMatch;
+    std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
+    std::smatch fullMatch;
+    std::string::const_iterator iterator;
+    std::map<std::string, std::vector<double>> dict;
+    size_t dimension;
 
     // Reset of all peripherals, Initializes the Flash interface and the Systick.
     HAL_Init();
@@ -168,17 +136,58 @@ int main() {
     MX_USART2_UART_Init();
 
     while (true) {
-        HAL_UART_Receive(&huart2, &buf_size, 1, 100);
-        HAL_UART_Receive(&huart2, const_cast<uint8_t*>(buf), buf_size, 100);
-        pBuf = reinterpret_cast<char*>(buf);
-        xk[0][0] = std::strtod(pBuf, &end);
-        for (iter = 1; iter < dict["C"].size(); iter++) {
-            pBuf = end;
-            xk[iter][0] = std::strtod(pBuf, &end);
+        if (isNewDataGoingToBeSend) {
+            isNewDataGoingToBeSend = false;
+            // 20s wait after pressing button to read data sent from PC
+            receive_data(20000);
+            if (*buf == '\'') {
+                pythonString = reinterpret_cast<char*>(buf);
+                iterator = pythonString.cbegin();
+                while (std::regex_search(iterator, pythonString.cend(), fullMatch, pattern)) {
+                    valuesMatch = fullMatch[3].str();
+                    std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
+                    valuesMatch.pop_back(); // trim ]
+                    valuesMatch.erase(0, 1); // trim [
+                    if (fullMatch[1].str().find('A') != std::string::npos) {
+                        stringToDouble(valuesMatch, dict["A"]);
+                    } else if (fullMatch[1].str().find('B') != std::string::npos) {
+                        stringToDouble(valuesMatch, dict["B"]);
+                    } else if (fullMatch[1].str().find('C') != std::string::npos) {
+                        stringToDouble(valuesMatch, dict["C"]);
+                    } else if (fullMatch[1].str().find("set") != std::string::npos) {
+                        stringToDouble(valuesMatch, dict["set"]);
+                    } else if (fullMatch[1].str().find("control") != std::string::npos) {
+                        stringToDouble(valuesMatch, dict["control"]);
+                    }
+                    iterator = fullMatch.suffix().first;
+                }
+                dimension = static_cast<size_t>(std::sqrt(dict["A"].size()));
+                xk_size = dict["C"].size();
+                A(dimension, dimension, dict["A"].data());
+                B(dict["B"].size(), 1, dict["B"].data());
+                C(1, xk_size, dict["C"].data());
+                xk(xk_size, 1);
+                w = dict["set"][0];
+                minControlValue = dict["control"][0];
+                maxControlValue = dict["control"][1];
+                dict.clear();
+                sprintf(reinterpret_cast<char *>(buf), "%f %f %f\n", w, minControlValue, maxControlValue);
+                send_string(buf);
+            }
         }
-        v = fastGradientMethod();
-        sprintf(reinterpret_cast<char*>(buf), "%f\n", v);
-        send_string(buf);
+        else {
+            HAL_UART_Receive(&huart2, &buf_size, 1, 100);
+            HAL_UART_Receive(&huart2, const_cast<uint8_t *>(buf), buf_size, 100);
+            pBuf = reinterpret_cast<char *>(buf);
+            xk[0][0] = std::strtod(pBuf, &end);
+            for (iter = 1; iter < xk_size; iter++) {
+                pBuf = end;
+                xk[iter][0] = std::strtod(pBuf, &end);
+            }
+            v = fastGradientMethod();
+            sprintf(reinterpret_cast<char *>(buf), "%f\n", v);
+            send_string(buf);
+        }
     }
 }
 
@@ -249,22 +258,12 @@ static void MX_GPIO_Init() {
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-    /*Configure GPIO pin : button_0_Pin */
-    GPIO_InitStruct.Pin = button_0_Pin;
-    GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(button_0_GPIO_Port, &GPIO_InitStruct);
-
     //Configure GPIO pin : LD2_Pin
     GPIO_InitStruct.Pin = LD2_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
     HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
-
-    /* EXTI interrupt init*/
-    HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
     HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
