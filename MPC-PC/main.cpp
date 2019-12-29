@@ -42,9 +42,11 @@ result calculateOptimizationMatrices(const CMatrix& A, const CVector& B, const C
 
     CMatrix F(prediction_horizon, C.GetColumns());
     CVector Rs(prediction_horizon, std::to_string(r));
-    F.SetRow(0, C * A);
-    for (uint32_t i = 1; i < prediction_horizon; i++) {
-        F.SetRow(i, F[i])
+    CVector product_vector(1, C.GetColumns());
+    product_vector = C * A;
+    for (uint32_t i = 0; i < prediction_horizon; i++) {
+        F.SetRow(i, product_vector);
+        product_vector *= A;
     }
     F[0][0] = (C * A * xk)[0][0];
     F[1][0] = (C * A * A * xk)[0][0];
