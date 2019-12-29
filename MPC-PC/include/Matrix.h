@@ -16,8 +16,12 @@ public:
     CMatrix(uint32_t rows, uint32_t columns, double** mat);
     CMatrix(uint32_t rows, uint32_t columns, const double* mat);
     CMatrix(uint32_t rows, uint32_t columns, const std::initializer_list<double>& list);
+    explicit CMatrix(uint32_t rows, const char* value = "");
     CMatrix(const CMatrix& M);
     ~CMatrix();
+
+    [[nodiscard]] uint32_t GetRows() const { return rows; }
+    [[nodiscard]] uint32_t GetColumns() const { return columns; }
 
     void GetSize(uint32_t& rows, uint32_t& columns) const;
     [[nodiscard]] double& GetElement(uint32_t row, uint32_t column) const;
@@ -39,6 +43,8 @@ public:
 
     CMatrix operator/ (const double& scalar) const;
     CMatrix& operator/= (const double& scalar);
+
+    CMatrix operator^ (const uint32_t& exponent) const;
 
     CMatrix operator-() const;
     [[nodiscard]] CMatrix T() const;
@@ -66,5 +72,8 @@ public:
     CVector(uint32_t rows, uint32_t column);
     CVector(uint32_t columns, double* mat);
     CVector(uint32_t rows, uint32_t flag, double* mat);
+    explicit CVector(uint32_t columns, const char* value = "");
+    CVector(uint32_t rows, uint32_t column, const char* value = "");
+
     CVector& operator= (const CMatrix& m);
 };

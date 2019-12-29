@@ -1,4 +1,5 @@
 #include "Matrix.h"
+#include <cstring>
 
 
 CMatrix::CMatrix(uint32_t rows, uint32_t columns) : rows(rows), columns(columns) {
@@ -52,6 +53,24 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, const std::initializer_list<do
 }
 
 
+CMatrix::CMatrix(uint32_t rows, const char* value) : rows(rows), columns(rows) {
+    make_matrix();
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            if (!std::strcmp(value, "eye")) {
+                if (i == j) {
+                    matrix[i][j] = 1;
+                } else {
+                    matrix[i][j] = 0;
+                }
+            } else {
+                matrix[i][j] = std::atoll(value);
+            }
+        }
+    }
+}
+
+
 CMatrix::~CMatrix() {
     for (uint32_t i = 0; i < rows; i++) {
         delete[] matrix[i];
@@ -64,7 +83,6 @@ void CMatrix::GetSize(uint32_t& rows, uint32_t& columns) const {
     rows = this->rows;
     columns = this->columns;
 }
-
 
 double& CMatrix::GetElement(uint32_t row, uint32_t column) const {
     if (row < 0 || column < 0 || row >= rows || column >= columns) {
@@ -83,6 +101,9 @@ double* CMatrix::operator[](uint32_t row) const {
 
 
 CMatrix& CMatrix:: operator= (const CMatrix& m) {
+    if (rows != m.rows || columns != m.columns) {
+        throw std::invalid_argument("Assign: Mismatch of matrices' dimensions");
+    }
     if (this == &m) {
         return *this;
     }
@@ -161,6 +182,18 @@ CMatrix& CMatrix::operator/= (const double& scalar) {
 CMatrix CMatrix::operator-() const {
     CMatrix mat(*this);
     mat.Mul(-1);
+    return mat;
+}
+
+
+CMatrix CMatrix::operator^ (const uint32_t& exponent) const {
+    if (rows != columns) {
+        throw std::invalid_argument("^: Matrix has to be square");
+    }
+    CMatrix mat(rows, "eye");
+    for (uint32_t i = 0; i < exponent; i++) {
+        mat *= *this;
+    }
     return mat;
 }
 
@@ -275,7 +308,6 @@ CMatrix CMatrix::Mul(const CMatrix& m) const {
     return productMatrix;
 }
 
-
 void CMatrix::Mul(const double& scalar) {
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
@@ -283,7 +315,6 @@ void CMatrix::Mul(const double& scalar) {
         }
     }
 }
-
 
 void CMatrix::Div(const double& scalar) {
     if (scalar == 0) {
@@ -310,15 +341,18 @@ CVector::CVector(uint32_t rows, uint32_t column, double* mat) : CMatrix(rows, 1,
 
 
 CVector& CVector::operator= (const CMatrix& m) {
-    uint32_t rows, columns;
-    m.GetSize(rows, columns);
-    if (rows == 1) {
-        for (uint32_t i = 0; i < columns; i++) {
+    uint32_t m_rows, m_columns;
+    m.GetSize(m_rows, m_columns);
+    if (m_rows != rows || m_columns != columns) {
+        throw std::invalid_argument("Assign: Mismatch of vector's dimensions");
+    }
+    if (m_rows == 1) {
+        for (uint32_t i = 0; i < m_columns; i++) {
             matrix[0][i] = m.GetElement(0, i);
         }
     }
     else {
-        for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t i = 0; i < m_rows; i++) {
             matrix[i][0] = m.GetElement(i, 0);
         }
     }

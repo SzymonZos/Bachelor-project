@@ -15,18 +15,32 @@ typedef enum {
 } result;
 
 result calculateOptimizationMatrices(const CMatrix& A, const CVector& B, const CVector& C, const CVector& xk, const double r, CMatrix& H, CMatrix& W) {
-    CMatrix fi(3, 3), Rw(3, 3);
-    CVector F(3, 1), Rs(3,1);
+    double R1 = 1;
+    uint32_t prediction_horizon = 15, control_horizon = 3;
+    CMatrix fi(prediction_horizon, control_horizon), Rw(control_horizon, "eye");
+    CVector product_matrix(C.GetColumns());
+    Rw *= R1;
+    product_matrix = C * (A ^ (prediction_horizon - control_horizon));
+    for (uint32_t i = prediction_horizon - 1; i >= 0; i--) {
+        for (uint32_t j = control_horizon - 1; j >= 0; j--) {
+            if (i == prediction_horizon - 1) {
+                if (j < control_horizon) {
+                    product_matrix *= A;
+                }
+                fi[i][j] = (product_matrix * B)[0][0];
+            } else if (i < j && j < control_horizon - 1) {
+                fi[i][j] = fi[i+1][j+1];
+            }
+        }
+    }
+//    fi[0][0] = (C * B)[0][0];
+//    fi[1][0] = (C * A * B)[0][0];
+//    fi[1][1] = fi[0][0];
+//    fi[2][0] = (C * A * A * B)[0][0];
+//    fi[2][1] = fi[1][0];
+//    fi[2][2] = fi[1][1];
 
-    fi[0][0] = (C * B)[0][0];
-    fi[1][0] = (C * A * B)[0][0];
-    fi[1][1] = fi[0][0];
-    fi[2][0] = (C * A * A * B)[0][0];
-    fi[2][1] = fi[1][0];
-    fi[2][2] = fi[1][1];
-
-    Rw[0][0] = 1; Rw[1][1] = 1; Rw[2][2] = 1;
-
+    CVector F(prediction_horizon, C.GetColumns()), Rs(prediction_horizon, std::to_string(r));
     F[0][0] = (C * A * xk)[0][0];
     F[1][0] = (C * A * A * xk)[0][0];
     F[2][0] = (C * A * A * A * xk)[0][0];
@@ -149,12 +163,8 @@ int main() {
     minControlValue = dict["control"][0];
     maxControlValue = dict["control"][1];
 //    fastGradientMethod(A, B, C, w);
-    double temp1[4] = {9, 8, 7, 6};
-    A(2, 2, temp1);
-    std::cout << A;
-    CMatrix temp2(2, 2, {1, 2, 3, 4});
-    std::cout << temp2;
-    temp2(3, 3, {6, 7, 8, 3, 5, 0, 2, 4, 5});
-    std::cout << temp2();
+    CMatrix temp(4, "eye");
+    temp = A ^ 5;
+    std::cout << temp;
     return 0;
 }

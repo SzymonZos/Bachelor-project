@@ -13,17 +13,16 @@ def power_iteration(A, num_simulations: int):
 
         # calculate the norm
         b_k1_norm = np.linalg.norm(b_k1)
-        print('numpy norm: ' + str(b_k1_norm))
-        print('my norm: ' + str(np.sqrt(np.dot(b_k1, b_k1))))
+        # print('my norm: ' + str(np.sqrt(np.dot(b_k1, b_k1))))
 
         # re normalize the vector
         b_k = b_k1 / b_k1_norm
 
-    return b_k
+    return np.dot(np.dot(A, b_k), b_k) / np.dot(b_k, b_k)
 
 
 def main():
-    print(power_iteration(np.array([[0.5, 0.5], [0.2, 0.8]]), 10))
+    print(power_iteration(np.array([[2, -12], [1, -5]]), 10))
 
 
 if __name__ == '__main__':

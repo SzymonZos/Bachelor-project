@@ -13,8 +13,8 @@ B = [0;
 C = [1 1 0 0];
 
 
-prediction_horizon = 15; % Np
-control_horizon = 2; % Nc
+prediction_horizon = 40; % Np
+control_horizon = 4; % Nc
 
 min_control = -5;
 max_control = 5;
@@ -27,15 +27,17 @@ Rw = R1 * eye(control_horizon);
 fi = zeros(prediction_horizon, control_horizon);
 product_matrix = C * A^(prediction_horizon - control_horizon);
 for i = prediction_horizon : -1 : 1
-    if i == prediction_horizon
-        for j = control_horizon : -1 : 1
+    for j = control_horizon : -1 : 1
+        if i == prediction_horizon
             if j < control_horizon
                 product_matrix = product_matrix * A;
             end
             fi(i, j) = product_matrix * B;
+        else
+            if i < j && j < control_horizon
+                fi(i, j) = fi(i+1, j+1);
+            end
         end
-    else
-        fi(i, j) = fi(i+1, j+1);
     end
 end
 
