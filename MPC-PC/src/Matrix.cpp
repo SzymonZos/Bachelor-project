@@ -53,18 +53,18 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, const std::initializer_list<do
 }
 
 
-CMatrix::CMatrix(uint32_t rows, const char* value) : rows(rows), columns(rows) {
+CMatrix::CMatrix(uint32_t rows, const std::string& value) : rows(rows), columns(rows) {
     make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
-            if (!std::strcmp(value, "eye")) {
+            if (!std::strcmp(value.c_str(), "eye")) {
                 if (i == j) {
                     matrix[i][j] = 1;
                 } else {
                     matrix[i][j] = 0;
                 }
             } else {
-                matrix[i][j] = std::atoll(value);
+                matrix[i][j] = std::atof(value.c_str());
             }
         }
     }
@@ -97,6 +97,38 @@ double* CMatrix::operator[](uint32_t row) const {
         throw std::invalid_argument("[]: Requested index is out of range");
     }
     return matrix[row];
+}
+
+
+void CMatrix::SetRow(uint32_t row, const CMatrix& v) {
+    if (v.rows != 1) {
+        throw std::invalid_argument("SetRow: Number of source's rows is greater than 1. CVector is required");
+    }
+    else if (v.columns != columns) {
+        throw std::invalid_argument("SetRow: Mismatch of source and destination size");
+    }
+    else if (row < 0 || row >= rows) {
+        throw std::invalid_argument("SetRow: Requested index is out of range");
+    }
+    for (uint32_t j = 0; j < columns; j++) {
+        matrix[row][j] = v[0][j];
+    }
+}
+
+
+void CMatrix::SetColumn(uint32_t column, const CMatrix& v) {
+    if (v.columns != 1) {
+        throw std::invalid_argument("SetColumn: Number of source's columns is greater than 1. CVector is required");
+    }
+    else if (v.rows != rows) {
+        throw std::invalid_argument("SetColumn: Mismatch of source and destination size");
+    }
+    if (column < 0 || column >= columns) {
+        throw std::invalid_argument("SetColumn: Requested index is out of range");
+    }
+    for (uint32_t i = 0; i < rows; i++) {
+        matrix[i][column] = v[i][0];
+    }
 }
 
 
@@ -292,7 +324,6 @@ void CMatrix::Sub(const CMatrix& m) {
     }
 }
 
-
 CMatrix CMatrix::Mul(const CMatrix& m) const {
     if (columns != m.rows) {
         throw std::invalid_argument("Mul: Mismatch of matrices' dimensions");
@@ -338,6 +369,22 @@ CVector::CVector(uint32_t columns, double* mat) : CMatrix(1, columns, mat) {}
 
 
 CVector::CVector(uint32_t rows, uint32_t column, double* mat) : CMatrix(rows, 1, mat) {}
+
+
+CVector::CVector(uint32_t columns, const std::string& value) : CMatrix(1, columns) {
+    make_matrix();
+    for (uint32_t i = 0; i < columns; i++) {
+        matrix[0][i] = std::atof(value.c_str());
+    }
+}
+
+
+CVector::CVector(uint32_t rows, uint32_t column, const std::string& value) : CMatrix(rows, 1) {
+    make_matrix();
+    for (uint32_t i = 0; i < columns; i++) {
+        matrix[0][i] = std::atof(value.c_str());
+    }
+}
 
 
 CVector& CVector::operator= (const CMatrix& m) {
