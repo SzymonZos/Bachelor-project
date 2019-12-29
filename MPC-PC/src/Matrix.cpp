@@ -373,16 +373,16 @@ CVector::CVector(uint32_t rows, uint32_t column, double* mat) : CMatrix(rows, 1,
 
 CVector::CVector(uint32_t columns, const std::string& value) : CMatrix(1, columns) {
     make_matrix();
-    for (uint32_t i = 0; i < columns; i++) {
-        matrix[0][i] = std::atof(value.c_str());
+    for (uint32_t j = 0; j < columns; j++) {
+        matrix[0][j] = std::atof(value.c_str());
     }
 }
 
 
 CVector::CVector(uint32_t rows, uint32_t column, const std::string& value) : CMatrix(rows, 1) {
     make_matrix();
-    for (uint32_t i = 0; i < columns; i++) {
-        matrix[0][i] = std::atof(value.c_str());
+    for (uint32_t i = 0; i < rows; i++) {
+        matrix[i][0] = std::atof(value.c_str());
     }
 }
 

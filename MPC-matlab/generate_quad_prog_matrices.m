@@ -13,8 +13,8 @@ B = [0;
 C = [1 1 0 0];
 
 
-prediction_horizon = 40; % Np
-control_horizon = 4; % Nc
+prediction_horizon = 15; % Np
+control_horizon = 3; % Nc
 
 min_control = -5;
 max_control = 5;

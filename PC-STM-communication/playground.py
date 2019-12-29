@@ -6,6 +6,7 @@ def power_iteration(A, num_simulations: int):
     # To decrease the chance that our vector
     # Is orthogonal to the eigenvector
     b_k = np.random.rand(A.shape[1])
+    print(b_k)
 
     for _ in range(num_simulations):
         # calculate the matrix-by-vector product Ab
