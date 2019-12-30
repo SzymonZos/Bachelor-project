@@ -21,28 +21,26 @@ double minControlValue = -0.5;
 double maxControlValue = 0.5;
 double w = 4;
 uint8_t buf[1024];
-CMatrix A(4, 4);
-CVector B(4, 1);
-CVector C(4);
-CVector xk(4, 1);
 uint16_t xk_size;
 static bool isNewDataGoingToBeSend;
 const uint32_t prediction_horizon = 10;
 const uint32_t control_horizon = 4;
+double L, mi, step, eigen_const;
 
-double power_iteration(const CMatrix& H, uint32_t max_number_of_iterations) {
+
+double power_iteration(const CMatrix& matrix, uint32_t max_number_of_iterations) {
     double greatest_eigenvalue_current = 0, greatest_eigenvalue_previous;
     std::random_device rd;
     std::mt19937 gen(rd());
-    CVector b_k(H.GetRows(), 1), b_k1(H.GetRows(), 1);
-    for (uint32_t i = 0; i < H.GetRows(); i++) {
+    CVector b_k(matrix.GetRows(), 1), b_k1(matrix.GetRows(), 1);
+    for (uint32_t i = 0; i < matrix.GetRows(); i++) {
         b_k[i][0] = std::generate_canonical<double, 10>(gen);
     }
     for (uint32_t i = 0; i < max_number_of_iterations; i++) {
-        b_k1 = H * b_k;
+        b_k1 = matrix * b_k;
         b_k = b_k1 / std::sqrt((b_k1 * b_k1.T())[0][0]);
         greatest_eigenvalue_previous = greatest_eigenvalue_current;
-        greatest_eigenvalue_current = ((H * b_k) * b_k.T())[0][0] / (b_k * b_k.T())[0][0];
+        greatest_eigenvalue_current = ((matrix * b_k) * b_k.T())[0][0] / (b_k * b_k.T())[0][0];
         if (std::fabs(greatest_eigenvalue_current - greatest_eigenvalue_previous) < 0.01) {
             break;
         }
@@ -50,7 +48,7 @@ double power_iteration(const CMatrix& H, uint32_t max_number_of_iterations) {
     return std::fabs(greatest_eigenvalue_current);
 }
 
-std::tuple<CMatrix, CMatrix, CMatrix, CVector> calculateOptimizationMatrices(const double r) {
+std::tuple<CMatrix, CMatrix, CMatrix, CVector> calculateOptimizationMatrices(const CMatrix& A, const CVector& B, const CVector& C, const double r) {
     double R1 = 1;
     CMatrix fi(prediction_horizon, control_horizon), Rw(control_horizon, "eye");
     CVector product_matrix(C.GetColumns());
@@ -80,7 +78,7 @@ std::tuple<CMatrix, CMatrix, CMatrix, CVector> calculateOptimizationMatrices(con
     return {fi, Rw, F, Rs};
 }
 
-void calculateProjectedGradientStep(const CMatrix& H, const CMatrix& W, CVector& v, CVector& w_v, const double step, const double eigen_const) {
+void calculateProjectedGradientStep(CVector& v, CVector& w_v, const CMatrix& H, const CMatrix& W) {
     uint32_t rows, columns;
     v.GetSize(rows, columns);
     CVector gradient(rows, 1), v_old = v;
@@ -99,18 +97,14 @@ void calculateProjectedGradientStep(const CMatrix& H, const CMatrix& W, CVector&
     w_v = v + (v - v_old) * eigen_const;
 }
 
-double fastGradientMethod() {
+double fastGradientMethod(const CMatrix& H, const CMatrix& fi, const CMatrix& F, const CVector& xk, const CVector& Rs, CMatrix& W) {
     CVector v(control_horizon, 1), w_v = v;
-    CMatrix H(control_horizon, control_horizon), W(control_horizon, 1);
     CMatrix J(1,1), J_prev(1,1);
-    auto[fi, Rw, F, Rs] = calculateOptimizationMatrices(1);
-    H = fi.T() * fi + Rw;
-    const double L = power_iteration(H, 20), mi = power_iteration(H.Inverse(), 20);
-    const double eps = 0.01, step = 1 / L, eigen_const = (std::sqrt(L) - std::sqrt(mi)) / (std::sqrt(L) + std::sqrt(mi));
+    const double eps = 0.01;
 
     for (uint32_t i = 0; i < 100; i++) {
         W = fi.T() * ((F * xk) - Rs);
-        calculateProjectedGradientStep(H, W, v, w_v, step, eigen_const);
+        calculateProjectedGradientStep(v, w_v, H, W);
         J_prev = J;
         J = v.T() * H * v / 2 + v.T() * W;
         if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
@@ -161,6 +155,12 @@ int main() {
     std::string::const_iterator iterator;
     std::map<std::string, std::vector<double>> dict;
     size_t dimension;
+    CMatrix A(4, 4);
+    CVector B(4, 1), C(4), xk(4, 1);
+    CMatrix H(control_horizon, control_horizon), W(control_horizon, 1);
+    CMatrix fi(prediction_horizon, control_horizon), Rw(control_horizon, "eye");
+    CMatrix F(prediction_horizon, C.GetColumns());
+    CVector Rs(prediction_horizon, 1, std::to_string(1));
 
     // Reset of all peripherals, Initializes the Flash interface and the Systick.
     HAL_Init();
@@ -203,6 +203,12 @@ int main() {
                 w = dict["set"][0];
                 minControlValue = dict["control"][0];
                 maxControlValue = dict["control"][1];
+                F(prediction_horizon, xk_size);
+                std::tie(fi, Rw, F, Rs) = calculateOptimizationMatrices(A, B, C, 1);
+                H = fi.T() * fi + Rw;
+                L = power_iteration(H, 20), mi = power_iteration(H.Inverse(), 20);
+                step = 1 / L, eigen_const = (std::sqrt(L) - std::sqrt(mi)) / (std::sqrt(L) + std::sqrt(mi));
+
                 dict.clear();
                 sprintf(reinterpret_cast<char *>(buf), "%f %f %f\n", w, minControlValue, maxControlValue);
                 send_string(buf);
@@ -217,7 +223,7 @@ int main() {
                 pBuf = end;
                 xk[iter][0] = std::strtod(pBuf, &end);
             }
-            v = fastGradientMethod();
+            v = fastGradientMethod(H, fi, F, xk, Rs, W);
             sprintf(reinterpret_cast<char *>(buf), "%f\n", v);
             send_string(buf);
         }
