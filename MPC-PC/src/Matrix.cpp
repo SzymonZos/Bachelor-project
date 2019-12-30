@@ -416,7 +416,7 @@ CMatrix CMatrix::GetCofactor(uint32_t row, uint32_t column) const {
 
 
 double CMatrix::Det(CMatrix&& cofactor, uint32_t iteration) const {
-    if (rows != columns) {
+    if (cofactor.rows != cofactor.columns) {
         throw std::domain_error("Det: Square matrix is needed to obtain its' determinant");
     }
     if (iteration == 1) {
