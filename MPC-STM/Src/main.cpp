@@ -5,6 +5,8 @@
 #include <map>
 #include <vector>
 #include <regex>
+#include <random>
+#include <tuple>
 #include "Matrix.h"
 
 UART_HandleTypeDef huart2;
@@ -25,59 +27,90 @@ CVector C(4);
 CVector xk(4, 1);
 uint16_t xk_size;
 static bool isNewDataGoingToBeSend;
+const uint32_t prediction_horizon = 10;
+const uint32_t control_horizon = 4;
 
-void calculateOptimizationMatrices(CMatrix& H, CMatrix& W) {
-    CMatrix fi(3, 3), Rw(3, 3);
-    CVector F(3, 1), Rs(3,1);
-
-    fi[0][0] = (C * B)[0][0];
-    fi[1][0] = (C * A * B)[0][0];
-    fi[1][1] = fi[0][0];
-    fi[2][0] = (C * A * A * B)[0][0];
-    fi[2][1] = fi[1][0];
-    fi[2][2] = fi[1][1];
-
-    Rw[0][0] = 1; Rw[1][1] = 1; Rw[2][2] = 1;
-
-    F[0][0] = (C * A * xk)[0][0];
-    F[1][0] = (C * A * A * xk)[0][0];
-    F[2][0] = (C * A * A * A * xk)[0][0];
-
-    Rs[0][0] = w; Rs[1][0] = w; Rs[2][0] = w;
-
-    H = fi.T() * fi + Rw;
-    W = fi.T() * (F - Rs);
-}
-
-void calculateProjectedGradientStep(const CMatrix& H, const CMatrix& W, CVector& v, const double step) {
-    uint32_t rows, columns;
-    v.GetSize(rows, columns);
-    CVector gradient(rows, 1);
-    gradient = H * v + W;
-    v -= gradient * step;
-    for (uint32_t i = 0; i < rows; i++) {
-        if (v[i][0] < minControlValue) {
-            v[i][0] = minControlValue;
-        }
-        else if (v[i][0] > maxControlValue) {
-            v[i][0] = maxControlValue;
+double power_iteration(const CMatrix& H, uint32_t max_number_of_iterations) {
+    double greatest_eigenvalue_current = 0, greatest_eigenvalue_previous;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    CVector b_k(H.GetRows(), 1), b_k1(H.GetRows(), 1);
+    for (uint32_t i = 0; i < H.GetRows(); i++) {
+        b_k[i][0] = std::generate_canonical<double, 10>(gen);
+    }
+    for (uint32_t i = 0; i < max_number_of_iterations; i++) {
+        b_k1 = H * b_k;
+        b_k = b_k1 / std::sqrt((b_k1 * b_k1.T())[0][0]);
+        greatest_eigenvalue_previous = greatest_eigenvalue_current;
+        greatest_eigenvalue_current = ((H * b_k) * b_k.T())[0][0] / (b_k * b_k.T())[0][0];
+        if (std::fabs(greatest_eigenvalue_current - greatest_eigenvalue_previous) < 0.01) {
+            break;
         }
     }
+    return std::fabs(greatest_eigenvalue_current);
+}
+
+std::tuple<CMatrix, CMatrix, CMatrix, CVector> calculateOptimizationMatrices(const double r) {
+    double R1 = 1;
+    CMatrix fi(prediction_horizon, control_horizon), Rw(control_horizon, "eye");
+    CVector product_matrix(C.GetColumns());
+    Rw *= R1;
+    product_matrix = C * (A ^ (prediction_horizon - control_horizon));
+    for (uint32_t i = prediction_horizon; i != 0; i--) {
+        for (uint32_t j = control_horizon; j != 0; j--) {
+            if (i == prediction_horizon) {
+                if (j < control_horizon) {
+                    product_matrix *= A;
+                }
+                fi[i-1][j-1] = (product_matrix * B)[0][0];
+            } else if (i < j && j < control_horizon) {
+                fi[i-1][j-1] = fi[i][j];
+            }
+        }
+    }
+
+    CMatrix F(prediction_horizon, C.GetColumns());
+    CVector Rs(prediction_horizon, 1, std::to_string(r));
+    product_matrix();
+    product_matrix = C * A;
+    for (uint32_t i = 0; i < prediction_horizon; i++) {
+        F.SetRow(i, product_matrix);
+        product_matrix *= A;
+    }
+    return {fi, Rw, F, Rs};
+}
+
+void calculateProjectedGradientStep(const CMatrix& H, const CMatrix& W, CVector& v, CVector& w_v, const double step, const double eigen_const) {
+    uint32_t rows, columns;
+    v.GetSize(rows, columns);
+    CVector gradient(rows, 1), v_old = v;
+    gradient = H * v + W;
+    w_v = v - gradient * step;
+    for (uint32_t i = 0; i < rows; i++) {
+        if (w_v[i][0] < minControlValue) {
+            v[i][0] = minControlValue;
+        }
+        else if (w_v[i][0] > maxControlValue) {
+            v[i][0] = maxControlValue;
+        } else {
+            v[i][0] = w_v[i][0];
+        }
+    }
+    w_v = v + (v - v_old) * eigen_const;
 }
 
 double fastGradientMethod() {
-    const uint32_t predictionHorizon = 3;
-    double eps = 0.01;
-    double temp[predictionHorizon] = {0, 0, 0};
-    uint32_t rowsMatrixA, columnsMatrixA;
-    A.GetSize(rowsMatrixA, columnsMatrixA);
-    CVector v(predictionHorizon, 1, temp);
-    CMatrix H(predictionHorizon, predictionHorizon), W(predictionHorizon, 1);
+    CVector v(control_horizon, 1), w_v = v;
+    CMatrix H(control_horizon, control_horizon), W(control_horizon, 1);
     CMatrix J(1,1), J_prev(1,1);
+    auto[fi, Rw, F, Rs] = calculateOptimizationMatrices(1);
+    H = fi.T() * fi + Rw;
+    const double L = power_iteration(H, 20), mi = power_iteration(H.Inverse(), 20);
+    const double eps = 0.01, step = 1 / L, eigen_const = (std::sqrt(L) - std::sqrt(mi)) / (std::sqrt(L) + std::sqrt(mi));
 
-    calculateOptimizationMatrices(H, W);
     for (uint32_t i = 0; i < 100; i++) {
-        calculateProjectedGradientStep(H, W, v, 0.1);
+        W = fi.T() * ((F * xk) - Rs);
+        calculateProjectedGradientStep(H, W, v, w_v, step, eigen_const);
         J_prev = J;
         J = v.T() * H * v / 2 + v.T() * W;
         if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {

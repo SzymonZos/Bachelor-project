@@ -60,7 +60,6 @@ std::tuple<CMatrix, CMatrix, CMatrix, CVector> calculateOptimizationMatrices(con
         F.SetRow(i, product_matrix);
         product_matrix *= A;
     }
-
     return {fi, Rw, F, Rs};
 }
 
