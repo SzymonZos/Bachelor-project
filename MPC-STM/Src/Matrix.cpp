@@ -1,4 +1,6 @@
 #include "Matrix.h"
+#include <ctgmath>
+#include <cstring>
 
 
 CMatrix::CMatrix(uint32_t rows, uint32_t columns) : rows(rows), columns(columns) {
@@ -52,6 +54,24 @@ CMatrix::CMatrix(uint32_t rows, uint32_t columns, const std::initializer_list<do
 }
 
 
+CMatrix::CMatrix(uint32_t rows, const std::string& value) : rows(rows), columns(rows) {
+    make_matrix();
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            if (!std::strcmp(value.c_str(), "eye")) {
+                if (i == j) {
+                    matrix[i][j] = 1;
+                } else {
+                    matrix[i][j] = 0;
+                }
+            } else {
+                matrix[i][j] = std::atof(value.c_str());
+            }
+        }
+    }
+}
+
+
 CMatrix::~CMatrix() {
     for (uint32_t i = 0; i < rows; i++) {
         delete[] matrix[i];
@@ -64,7 +84,6 @@ void CMatrix::GetSize(uint32_t& rows, uint32_t& columns) const {
     rows = this->rows;
     columns = this->columns;
 }
-
 
 double& CMatrix::GetElement(uint32_t row, uint32_t column) const {
     if (row < 0 || column < 0 || row >= rows || column >= columns) {
@@ -82,13 +101,76 @@ double* CMatrix::operator[](uint32_t row) const {
 }
 
 
-CMatrix& CMatrix:: operator= (const CMatrix& m) {
-    if (this == &m) {
-        return *this;
+void CMatrix::SetRow(uint32_t row, const CMatrix& v) {
+    if (v.rows != 1) {
+        throw std::invalid_argument("SetRow: Number of source's rows is greater than 1. CVector is required");
+    }
+    else if (v.columns != columns) {
+        throw std::invalid_argument("SetRow: Mismatch of source and destination size");
+    }
+    else if (row < 0 || row >= rows) {
+        throw std::invalid_argument("SetRow: Requested index is out of range");
+    }
+    for (uint32_t j = 0; j < columns; j++) {
+        matrix[row][j] = v[0][j];
+    }
+}
+
+
+void CMatrix::SetColumn(uint32_t column, const CMatrix& v) {
+    if (v.columns != 1) {
+        throw std::invalid_argument("SetColumn: Number of source's columns is greater than 1. CVector is required");
+    }
+    else if (v.rows != rows) {
+        throw std::invalid_argument("SetColumn: Mismatch of source and destination size");
+    }
+    if (column < 0 || column >= columns) {
+        throw std::invalid_argument("SetColumn: Requested index is out of range");
     }
     for (uint32_t i = 0; i < rows; i++) {
-        for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] = m.matrix[i][j];
+        matrix[i][column] = v[i][0];
+    }
+}
+
+
+double CMatrix::Det() const {
+    if (rows != columns) {
+        throw std::domain_error("Det: Square matrix is needed to obtain its' determinant");
+    }
+    if (rows == 1) {
+        return matrix[0][0];
+    }
+    double det = 0;
+    for (uint32_t j = 0; j < columns; j++) {
+        if (j % 2) {
+            det -= matrix[0][j] * GetCofactor(0, j).Det();
+        } else {
+            det += matrix[0][j] * GetCofactor(0, j).Det();
+        }
+    }
+    return det;
+}
+
+
+CMatrix CMatrix::Inverse() const
+{
+    double determinant = Det();
+    if (std::fabs(determinant) <= 0.001) {
+        throw std::domain_error("Inverse: Square matrix is singular (Det == 0)");
+    }
+    return GetAdjugate() / determinant;
+}
+
+
+CMatrix& CMatrix:: operator= (const CMatrix& m) {
+    if (rows != m.rows || columns != m.columns) {
+        throw std::invalid_argument("Assign: Mismatch of matrices' dimensions");
+    }
+    if (this != &m) {
+        for (uint32_t i = 0; i < rows; i++) {
+            for (uint32_t j = 0; j < columns; j++) {
+                matrix[i][j] = m.matrix[i][j];
+            }
         }
     }
     return *this;
@@ -165,6 +247,18 @@ CMatrix CMatrix::operator-() const {
 }
 
 
+CMatrix CMatrix::operator^ (const uint32_t& exponent) const {
+    if (rows != columns) {
+        throw std::invalid_argument("^: Matrix has to be square");
+    }
+    CMatrix mat(rows, "eye");
+    for (uint32_t i = 0; i < exponent; i++) {
+        mat *= *this;
+    }
+    return mat;
+}
+
+
 CMatrix CMatrix::T() const {
     CMatrix matrix_t(columns, rows);
     for (uint32_t i = 0; i < rows; i++) {
@@ -191,6 +285,11 @@ CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns) {
     this->rows = rows;
     this->columns = columns;
     make_matrix();
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] = 0;
+        }
+    }
     return *this;
 }
 
@@ -306,6 +405,47 @@ void CMatrix::Div(const double& scalar) {
 }
 
 
+CMatrix CMatrix::GetCofactor(uint32_t row, uint32_t column) const {
+    CMatrix cofactor(rows - 1, columns - 1);
+    int c_i = 0, c_j = 0;
+    for (uint32_t i = 0; i < rows; i++) {
+        c_j = 0;
+        for (uint32_t j = 0; j < columns; j++) {
+            if (i != row && j != column) {
+                cofactor[c_i][c_j++] = matrix[i][j];
+            }
+        }
+        if (i != row) {
+            c_i++;
+        }
+    }
+    return cofactor;
+}
+
+
+CMatrix CMatrix::GetAdjugate() const {
+    if (rows != columns) {
+        throw std::domain_error("GetAdjugate: Square matrix is needed to obtain its' adjugate");
+    }
+    CMatrix adjugate(rows, columns);
+    if (rows == 1 && matrix[0][0] != 0) {
+        adjugate[0][0] = 1;
+    }
+    else if (rows > 1) {
+        for (uint32_t i = 0; i < rows; i++) {
+            for (uint32_t j = 0; j < columns; j++) {
+                if ((i + j) % 2) {
+                    adjugate[j][i] = - GetCofactor(i, j).Det();
+                } else {
+                    adjugate[j][i] = GetCofactor(i, j).Det();
+                }
+            }
+        }
+    }
+    return adjugate;
+}
+
+
 CVector::CVector(uint32_t columns) : CMatrix(1, columns) {}
 
 
@@ -317,16 +457,36 @@ CVector::CVector(uint32_t columns, double* mat) : CMatrix(1, columns, mat) {}
 
 CVector::CVector(uint32_t rows, uint32_t column, double* mat) : CMatrix(rows, 1, mat) {}
 
+
+CVector::CVector(uint32_t columns, const std::string& value) : CMatrix(1, columns) {
+    make_matrix();
+    for (uint32_t j = 0; j < columns; j++) {
+        matrix[0][j] = std::atof(value.c_str());
+    }
+}
+
+
+CVector::CVector(uint32_t rows, uint32_t column, const std::string& value) : CMatrix(rows, 1) {
+    make_matrix();
+    for (uint32_t i = 0; i < rows; i++) {
+        matrix[i][0] = std::atof(value.c_str());
+    }
+}
+
+
 CVector& CVector::operator= (const CMatrix& m) {
-    uint32_t rows, columns;
-    m.GetSize(rows, columns);
-    if (rows == 1) {
-        for (uint32_t i = 0; i < columns; i++) {
+    uint32_t m_rows, m_columns;
+    m.GetSize(m_rows, m_columns);
+    if (m_rows != rows || m_columns != columns) {
+        throw std::invalid_argument("Assign: Mismatch of vector's dimensions");
+    }
+    if (m_rows == 1) {
+        for (uint32_t i = 0; i < m_columns; i++) {
             matrix[0][i] = m.GetElement(0, i);
         }
     }
     else {
-        for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t i = 0; i < m_rows; i++) {
             matrix[i][0] = m.GetElement(i, 0);
         }
     }
