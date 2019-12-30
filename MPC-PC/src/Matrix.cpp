@@ -1,4 +1,5 @@
 #include "Matrix.h"
+#include <ctgmath>
 #include <cstring>
 
 
@@ -140,16 +141,24 @@ double CMatrix::Det() const {
         return matrix[0][0];
     }
     double det = 0;
-    CMatrix cofactor(rows - 1, columns - 1);
     for (uint32_t j = 0; j < columns; j++) {
-        cofactor = GetCofactor(0, j);
         if (j % 2) {
-            det -= matrix[0][j] * Det(std::move(cofactor), rows - 1);
+            det -= matrix[0][j] * GetCofactor(0, j).Det();
         } else {
-            det += matrix[0][j] * Det(std::move(cofactor), rows - 1);
+            det += matrix[0][j] * GetCofactor(0, j).Det();
         }
     }
     return det;
+}
+
+
+CMatrix CMatrix::Inverse() const
+{
+    double determinant = Det();
+    if (std::fabs(determinant) <= 0.001) {
+        throw std::domain_error("Inverse: Square matrix is singular (Det == 0)");
+    }
+    return GetAdjugate() / determinant;
 }
 
 
@@ -157,12 +166,11 @@ CMatrix& CMatrix:: operator= (const CMatrix& m) {
     if (rows != m.rows || columns != m.columns) {
         throw std::invalid_argument("Assign: Mismatch of matrices' dimensions");
     }
-    if (this == &m) {
-        return *this;
-    }
-    for (uint32_t i = 0; i < rows; i++) {
-        for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] = m.matrix[i][j];
+    if (this != &m) {
+        for (uint32_t i = 0; i < rows; i++) {
+            for (uint32_t j = 0; j < columns; j++) {
+                matrix[i][j] = m.matrix[i][j];
+            }
         }
     }
     return *this;
@@ -415,22 +423,26 @@ CMatrix CMatrix::GetCofactor(uint32_t row, uint32_t column) const {
 }
 
 
-double CMatrix::Det(CMatrix&& cofactor, uint32_t iteration) const {
-    if (cofactor.rows != cofactor.columns) {
-        throw std::domain_error("Det: Square matrix is needed to obtain its' determinant");
+CMatrix CMatrix::GetAdjugate() const {
+    if (rows != columns) {
+        throw std::domain_error("GetAdjugate: Square matrix is needed to obtain its' adjugate");
     }
-    if (iteration == 1) {
-        return cofactor[0][0];
+    CMatrix adjugate(rows, columns);
+    if (rows == 1 && matrix[0][0] != 0) {
+        adjugate[0][0] = 1;
     }
-    double det = 0;
-    for (uint32_t j = 0; j < iteration; j++) {
-        if (j % 2) {
-            det -= cofactor[0][j] * Det(cofactor.GetCofactor(0, j), iteration - 1);
-        } else {
-            det += cofactor[0][j] * Det(cofactor.GetCofactor(0, j), iteration - 1);
+    else if (rows > 1) {
+        for (uint32_t i = 0; i < rows; i++) {
+            for (uint32_t j = 0; j < columns; j++) {
+                if ((i + j) % 2) {
+                    adjugate[j][i] = - GetCofactor(i, j).Det();
+                } else {
+                    adjugate[j][i] = GetCofactor(i, j).Det();
+                }
+            }
         }
     }
-    return det;
+    return adjugate;
 }
 
 

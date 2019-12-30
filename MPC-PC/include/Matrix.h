@@ -32,6 +32,8 @@ public:
     void SetColumn(uint32_t column, const CMatrix& v);
 
     [[nodiscard]] double Det() const;
+    [[nodiscard]] CMatrix Inverse() const;
+
     double* operator[](uint32_t row) const;
 
     CMatrix& operator= (const CMatrix& m);
@@ -70,7 +72,7 @@ private:
     void Mul(const double& scalar);
     void Div(const double& scalar);
     [[nodiscard]] CMatrix GetCofactor(uint32_t row, uint32_t column) const;
-    [[nodiscard]] double Det(CMatrix&& cofactor, uint32_t iteration) const;
+    [[nodiscard]] CMatrix GetAdjugate() const;
 };
 
 
