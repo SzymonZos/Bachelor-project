@@ -132,6 +132,27 @@ void CMatrix::SetColumn(uint32_t column, const CMatrix& v) {
 }
 
 
+double CMatrix::Det() const {
+    if (rows != columns) {
+        throw std::domain_error("Det: Square matrix is needed to obtain its' determinant");
+    }
+    if (rows == 1) {
+        return matrix[0][0];
+    }
+    double det = 0;
+    CMatrix cofactor(rows - 1, columns - 1);
+    for (uint32_t j = 0; j < columns; j++) {
+        cofactor = GetCofactor(0, j);
+        if (j % 2) {
+            det -= matrix[0][j] * Det(std::move(cofactor), rows - 1);
+        } else {
+            det += matrix[0][j] * Det(std::move(cofactor), rows - 1);
+        }
+    }
+    return det;
+}
+
+
 CMatrix& CMatrix:: operator= (const CMatrix& m) {
     if (rows != m.rows || columns != m.columns) {
         throw std::invalid_argument("Assign: Mismatch of matrices' dimensions");
@@ -251,6 +272,20 @@ CMatrix CMatrix::operator()() {
 }
 
 
+CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns) {
+    this->~CMatrix();
+    this->rows = rows;
+    this->columns = columns;
+    make_matrix();
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] = 0;
+        }
+    }
+    return *this;
+}
+
+
 CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const double* mat) {
     this->~CMatrix();
     this->rows = rows;
@@ -324,6 +359,7 @@ void CMatrix::Sub(const CMatrix& m) {
     }
 }
 
+
 CMatrix CMatrix::Mul(const CMatrix& m) const {
     if (columns != m.rows) {
         throw std::invalid_argument("Mul: Mismatch of matrices' dimensions");
@@ -339,6 +375,7 @@ CMatrix CMatrix::Mul(const CMatrix& m) const {
     return productMatrix;
 }
 
+
 void CMatrix::Mul(const double& scalar) {
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
@@ -346,6 +383,7 @@ void CMatrix::Mul(const double& scalar) {
         }
     }
 }
+
 
 void CMatrix::Div(const double& scalar) {
     if (scalar == 0) {
@@ -356,6 +394,43 @@ void CMatrix::Div(const double& scalar) {
             matrix[i][j] /= scalar;
         }
     }
+}
+
+
+CMatrix CMatrix::GetCofactor(uint32_t row, uint32_t column) const {
+    CMatrix cofactor(rows - 1, columns - 1);
+    int c_i = 0, c_j = 0;
+    for (uint32_t i = 0; i < rows; i++) {
+        c_j = 0;
+        for (uint32_t j = 0; j < columns; j++) {
+            if (i != row && j != column) {
+                cofactor[c_i][c_j++] = matrix[i][j];
+            }
+        }
+        if (i != row) {
+            c_i++;
+        }
+    }
+    return cofactor;
+}
+
+
+double CMatrix::Det(CMatrix&& cofactor, uint32_t iteration) const {
+    if (rows != columns) {
+        throw std::domain_error("Det: Square matrix is needed to obtain its' determinant");
+    }
+    if (iteration == 1) {
+        return cofactor[0][0];
+    }
+    double det = 0;
+    for (uint32_t j = 0; j < iteration; j++) {
+        if (j % 2) {
+            det -= cofactor[0][j] * Det(cofactor.GetCofactor(0, j), iteration - 1);
+        } else {
+            det += cofactor[0][j] * Det(cofactor.GetCofactor(0, j), iteration - 1);
+        }
+    }
+    return det;
 }
 
 

@@ -31,41 +31,46 @@ public:
     void SetRow(uint32_t row, const CMatrix& v);
     void SetColumn(uint32_t column, const CMatrix& v);
 
+    [[nodiscard]] double Det() const;
     double* operator[](uint32_t row) const;
+
     CMatrix& operator= (const CMatrix& m);
-
     CMatrix operator+ (const CMatrix& m) const;
+
     CMatrix& operator+= (const CMatrix& m);
-
     CMatrix operator- (const CMatrix& m) const;
+
     CMatrix& operator-= (const CMatrix& m);
-
     CMatrix operator* (const CMatrix& m) const;
+
     CMatrix& operator*= (const CMatrix& m);
-
     CMatrix operator* (const double& scalar) const;
+
     CMatrix& operator*= (const double& scalar);
-
     CMatrix operator/ (const double& scalar) const;
-    CMatrix& operator/= (const double& scalar);
 
+    CMatrix& operator/= (const double& scalar);
     CMatrix operator^ (const uint32_t& exponent) const;
 
     CMatrix operator-() const;
     [[nodiscard]] CMatrix T() const;
 
     CMatrix operator()();
+    CMatrix operator()(uint32_t rows, uint32_t columns);
     CMatrix operator()(uint32_t rows, uint32_t columns, const double* mat);
     CMatrix operator()(uint32_t rows, uint32_t columns, const std::initializer_list<double>& list);
 
     friend std::ostream& operator<< (std::ostream& stream, const CMatrix& m);
 
 private:
+
     void Add(const CMatrix& m);
     void Sub(const CMatrix& m);
     [[nodiscard]] CMatrix Mul(const CMatrix& m) const;
     void Mul(const double& scalar);
     void Div(const double& scalar);
+    [[nodiscard]] CMatrix GetCofactor(uint32_t row, uint32_t column) const;
+    [[nodiscard]] double Det(CMatrix&& cofactor, uint32_t iteration) const;
 };
 
 

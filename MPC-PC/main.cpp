@@ -220,7 +220,7 @@ bool inverse(int A[N][N], float inverse[N][N])
         std::cout << "Singular matrix, can't find its inverse";
         return false;
     }
-
+    std::cout << det << std::endl;
     // Find adjoint
     int adj[N][N];
     adjoint(A, adj);
@@ -291,20 +291,28 @@ int main() {
                     {-3, 1, 5, 0},
                     {3, -1, -9, 4}};
 
+    double B[N][N] = { {5, -2, 2, 7},
+                    {1, 0, 0, 3},
+                    {-3, 1, 5, 0},
+                    {3, -1, -9, 4}};
+
     int adj[N][N];  // To store adjoint of A[][]
 
     float inv[N][N]; // To store inverse of A[][]
 
-    cout << "Input matrix is :\n";
+    std::cout << "Input matrix is :\n";
     display(A);
 
-    cout << "\nThe Adjoint is :\n";
+    std::cout << "\nThe Adjoint is :\n";
     adjoint(A, adj);
     display(adj);
 
-    cout << "\nThe Inverse is :\n";
+    std::cout << "\nThe Inverse is :\n";
     if (inverse(A, inv))
         display(inv);
+
+    CMatrix test(N, N, *B);
+    std::cout << test.Det();
 
     return 0;
 }
