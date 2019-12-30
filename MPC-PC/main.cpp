@@ -69,7 +69,7 @@ void calculateProjectedGradientStep(const CMatrix& H, const CMatrix& W, const CV
     v.GetSize(rows, columns);
     CVector gradient(rows, 1), v_old = v;
     gradient = H * v + W;
-    w -= gradient * step;
+    w = v - gradient * step;
     for (uint32_t i = 0; i < rows; i++) {
         if (w[i][0] < minControlValue) {
             v[i][0] = minControlValue;
