@@ -1,0 +1,118 @@
+\documentclass[12pt, a4paper]{report}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{polski}
+\usepackage{icomma}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\graphicspath{ {graphics/} }
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\usepgfplotslibrary{groupplots}
+\usepgfplotslibrary{dateplot}
+\pgfplotsset{every axis/.append style={
+             tick label style={/pgf/number format/fixed},
+             font=\scriptsize,
+             ylabel near ticks,xlabel near ticks,
+             grid=major}}
+\usepackage{diagbox}
+\usepackage[justification=centering]{caption}
+\usepackage{subcaption}
+\usepackage{setspace}
+\usepackage{array}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage[hidelinks]{hyperref}
+\usepackage[shortlabels]{enumitem}
+\usepackage{siunitx}
+\sisetup{locale = FR}
+
+\usepackage{minted}
+\renewcommand\listoflistingscaption{Spis listingów}
+\usepackage[polish]{babel}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{rotating}
+\pgfplotsset{compat=1.8}
+\usepackage[toc,page]{appendix}
+\renewcommand{\appendixtocname}{Dodatki}
+\renewcommand{\appendixpagename}{Dodatki}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+\fancyhead{}
+\fancyhead[RO,LE]{\chaptername: \rightmark}
+
+% Forbid to split given words
+\hyphenation{LabVIEW}
+
+\pgfplotsset{grid style={dashed}}
+% This is necessary to plot softmax function
+\pgfmathdeclarefunction{sumexp}{3}{%
+\begingroup%
+\pgfkeys{/pgf/fpu,/pgf/fpu/output format=fixed}%
+\pgfmathsetmacro{\myx}{#1}%
+\pgfmathtruncatemacro{\myxmin}{#2}%
+\pgfmathtruncatemacro{\myxmax}{#3}%
+\pgfmathsetmacro{\mysum}{0}%
+\pgfplotsforeachungrouped\XX in {\myxmin,...,\myxmax}%
+{\pgfmathsetmacro{\mysum}{\mysum+exp(\XX)}}%
+\pgfmathparse{\mysum+exp(#1)}%
+\pgfmathsmuggle\pgfmathresult\endgroup%
+}%
+
+\begin{document}
+
+\input{titlepage}
+
+\pagenumbering{gobble}
+
+% Introductory pages
+\begin{abstract}
+Lorem ipsum.
+
+\end{abstract}
+ 
+\tableofcontents
+
+\newpage
+\pagenumbering{arabic}
+
+% Chapters
+\chapter{Wstęp}
+\input{chapters/introduction}
+
+\chapter{Idea regulatora MPC}
+\input{chapters/idea}
+
+\chapter{Założenia projektowe i~wykorzystane narzędzia}
+\input{chapters/assumptions}
+
+\chapter{Implementacja rozwiązania}
+\input{chapters/implementation}
+
+\chapter{Przykładowe wyniki}
+\input{chapters/results}
+
+\chapter{Podsumowanie} \label{ch:summary}
+\input{chapters/summary}
+
+\begin{appendices}
+\input{chapters/appendices}
+\end{appendices}
+
+\newpage
+
+% Lists of objects
+\listoffigures
+\listoftables
+\listoflistings
+
+% Bibliography
+\nocite{*}
+\bibliographystyle{plplain}
+\bibliography{references}
+
+\end{document}
