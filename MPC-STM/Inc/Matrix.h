@@ -61,6 +61,7 @@ public:
     CMatrix operator()(uint32_t rows, uint32_t columns);
     CMatrix operator()(uint32_t rows, uint32_t columns, const double* mat);
     CMatrix operator()(uint32_t rows, uint32_t columns, const std::initializer_list<double>& list);
+    CMatrix operator()(uint32_t rows, uint32_t columns, const std::string& value);
 
     friend std::ostream& operator<< (std::ostream& stream, const CMatrix& m);
 

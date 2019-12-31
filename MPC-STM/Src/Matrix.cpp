@@ -323,6 +323,20 @@ CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const std::initiali
 }
 
 
+CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const std::string& value) {
+    this->~CMatrix();
+    this->rows = rows;
+    this->columns = columns;
+    make_matrix();
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] = std::atof(value.c_str());
+        }
+    }
+    return *this;
+}
+
+
 std::ostream& operator<< (std::ostream& stream, const CMatrix& m) {
     uint32_t rows, columns;
     m.GetSize(rows, columns);
@@ -421,7 +435,6 @@ CMatrix CMatrix::GetCofactor(uint32_t row, uint32_t column) const {
     }
     return cofactor;
 }
-
 
 CMatrix CMatrix::GetAdjugate() const {
     if (rows != columns) {

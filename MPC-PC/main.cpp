@@ -137,7 +137,7 @@ void print_map(const __Map& m)
 }
 
 int main() {
-    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-5, 5]";
+    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-10, 10], 'horizons': [13, 5]";
     std::string pythonString = python, valuesMatch;
     std::regex namesPattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
     std::smatch namesMatch;
@@ -163,6 +163,8 @@ int main() {
         }
         else if(namesMatch[1].str().find("control") != std::string::npos) {
             stringToDouble(valuesMatch, dict["control"]);
+        } else if (namesMatch[1].str().find("horizon") != std::string::npos) {
+            stringToDouble(valuesMatch, dict["horizons"]);
         }
         iterPtr = namesMatch.suffix().first;
     }
@@ -175,7 +177,7 @@ int main() {
     double w = dict["set"][0];
     minControlValue = dict["control"][0];
     maxControlValue = dict["control"][1];
-    fastGradientMethod(A, B, C, w);
+//    fastGradientMethod(A, B, C, w);
 
     return 0;
 }

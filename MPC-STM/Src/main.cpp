@@ -23,8 +23,8 @@ double w = 4;
 uint8_t buf[1024];
 uint16_t xk_size;
 static bool isNewDataGoingToBeSend;
-const uint32_t prediction_horizon = 10;
-const uint32_t control_horizon = 4;
+uint32_t prediction_horizon = 10;
+uint32_t control_horizon = 4;
 double L, mi, step, eigen_const;
 
 
@@ -191,6 +191,8 @@ int main() {
                         stringToDouble(valuesMatch, dict["set"]);
                     } else if (fullMatch[1].str().find("control") != std::string::npos) {
                         stringToDouble(valuesMatch, dict["control"]);
+                    } else if (fullMatch[1].str().find("horizon") != std::string::npos) {
+                        stringToDouble(valuesMatch, dict["horizons"]);
                     }
                     iterator = fullMatch.suffix().first;
                 }
@@ -203,15 +205,22 @@ int main() {
                 w = dict["set"][0];
                 minControlValue = dict["control"][0];
                 maxControlValue = dict["control"][1];
+                prediction_horizon = dict["horizons"][0];
+                control_horizon = dict["horizons"][1];
                 F(prediction_horizon, xk_size);
-                std::tie(fi, Rw, F, Rs) = calculateOptimizationMatrices(A, B, C, 1);
+                fi(prediction_horizon, control_horizon);
+                Rw(control_horizon, control_horizon, "eye");
+                Rs(prediction_horizon, 1);
+                H(control_horizon, control_horizon);
+                W(control_horizon, 1);
+                std::tie(fi, Rw, F, Rs) = calculateOptimizationMatrices(A, B, C, w);
                 H = fi.T() * fi + Rw;
+                send_string(buf);
                 L = power_iteration(H, 20), mi = power_iteration(H.Inverse(), 20);
                 step = 1 / L, eigen_const = (std::sqrt(L) - std::sqrt(mi)) / (std::sqrt(L) + std::sqrt(mi));
 
                 dict.clear();
-                sprintf(reinterpret_cast<char *>(buf), "%f %f %f\n", w, minControlValue, maxControlValue);
-                send_string(buf);
+//                sprintf(reinterpret_cast<char *>(buf), "%f %f %f\n", w, minControlValue, maxControlValue);
             }
         }
         else {
