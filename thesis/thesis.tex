@@ -1,8 +1,8 @@
-\documentclass[12pt, a4paper]{report}
+\documentclass[12pt, twoside, a4paper]{report}
+\usepackage[T1]{polski}
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
-\usepackage[margin=2.5cm]{geometry}
-\usepackage{polski}
+\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
 \usepackage{icomma}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
@@ -34,6 +34,9 @@
 \usepackage[polish]{babel}
 \usepackage{booktabs}
 \usepackage{multirow}
+\usepackage{titlesec}
+\titleformat{\chapter}[hang] 
+{\huge\bfseries}{\chaptertitlename\ \thechapter:}{1em}{}
 \usepackage{rotating}
 \pgfplotsset{compat=1.8}
 \usepackage[toc,page]{appendix}
@@ -43,7 +46,8 @@
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 
 \fancyhead{}
-\fancyhead[RO,LE]{\chaptername: \rightmark}
+\setlength{\headheight}{14.5pt}
+\fancyhead[RO, LE]{\chaptername: \rightmark}
 
 % Forbid to split given words
 \hyphenation{LabVIEW}
