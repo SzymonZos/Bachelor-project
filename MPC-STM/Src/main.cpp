@@ -1,4 +1,4 @@
-#include "main.h"
+#include "HAL/main.h"
 #include <cmath>
 #include <cstring>
 #include <algorithm>
@@ -7,7 +7,7 @@
 #include <regex>
 #include <random>
 #include <tuple>
-#include "Matrix.h"
+#include "utils/Matrix.hpp"
 
 UART_HandleTypeDef huart2;
 
