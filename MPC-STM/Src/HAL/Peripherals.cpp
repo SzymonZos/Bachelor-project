@@ -1,5 +1,13 @@
 #include "HAL/Peripherals.hpp"
 #include <cstring>
+extern bool isNewDataGoingToBeSend;
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if(GPIO_Pin == B1_Pin) {
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+        isNewDataGoingToBeSend = true;
+    }
+}
 
 
 HAL::Peripherals::Peripherals() : initGPIO{}, handleUART{}, oscillator{}, clock{} {
@@ -49,12 +57,12 @@ void HAL::Peripherals::Init() {
 }
 
 
-void HAL::Peripherals::sendString(const uint8_t* string, uint16_t timeout) {
+void HAL::Peripherals::SendString(const uint8_t* string, uint16_t timeout) {
     HAL_UART_Transmit(&handleUART, const_cast<uint8_t*>(string), std::strlen(reinterpret_cast<const char*>(string)), timeout);
 }
 
 
-void HAL::Peripherals::receiveString(const uint8_t* string, uint16_t timeout) {
+void HAL::Peripherals::ReceiveString(const uint8_t* string, uint16_t timeout) {
     uint8_t bufSize = 0;
     HAL_UART_Receive(&handleUART, &bufSize, 1, timeout);
     HAL_UART_Receive(&handleUART, const_cast<uint8_t*>(string), bufSize, 100);
@@ -72,6 +80,7 @@ void HAL::Peripherals::ConfigureSystemClock() {
     // Initializes the CPU, AHB and APB busses clocks
     HAL_RCC_ClockConfig(&clock, FLASH_LATENCY_2);
 }
+
 
 void HAL::Peripherals::InitializeGPIO() {
     // GPIO Ports Clock Enable

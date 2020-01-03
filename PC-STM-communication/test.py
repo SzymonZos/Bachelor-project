@@ -9,7 +9,7 @@ systemParameters = {'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
                     'C': [1, 1, 0, 0],
                     'setPoint': [10],
                     'controlExtremeValues': [-10, 10],
-                    'horizons': [6, 3]}
+                    'horizons': [15, 3]}
 systemParametersToSend = str(systemParameters)[1:-1] + '\n\0'
 A = np.array(systemParameters['A']).reshape(-1, int(np.sqrt(len(systemParameters['A']))))
 B = np.array(systemParameters['B']).reshape(len(systemParameters['B']), -1)
@@ -23,7 +23,7 @@ with serial.Serial('COM3', 115200, timeout=3) as ser:
         ser.write(bytes([len(systemParametersToSend)]))
         ser.write(systemParametersToSend.encode())
         print(ser.readline().decode('utf-8'))
-    for i in range(400):
+    for i in range(200):
         xToSend = np.array2string(x.flatten(), formatter={'float_kind': lambda number: "%.4f" % number})
         xToSend = xToSend[1:-1] + '\0'
         ser.write(bytes([len(xToSend)]))

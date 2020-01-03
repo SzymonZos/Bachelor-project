@@ -5,9 +5,9 @@
 #include <map>
 #include <vector>
 #include <regex>
-#include <random>
 #include <tuple>
 #include "utils/Matrix.hpp"
+#include "utils/Misc.hpp"
 #include "HAL/Peripherals.hpp"
 
 // TODO: move this atrocity to class
@@ -16,31 +16,10 @@ double maxControlValue = 0.5;
 double w = 4;
 uint8_t buf[1024];
 uint16_t xk_size;
-static bool isNewDataGoingToBeSend;
+bool isNewDataGoingToBeSend;
 uint32_t prediction_horizon = 10;
 uint32_t control_horizon = 4;
 double L, mi, step, eigen_const;
-
-
-double power_iteration(const CMatrix& matrix, uint32_t max_number_of_iterations) {
-    double greatest_eigenvalue_current = 0, greatest_eigenvalue_previous;
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    CVector b_k(matrix.GetRows(), 1), b_k1(matrix.GetRows(), 1);
-    for (uint32_t i = 0; i < matrix.GetRows(); i++) {
-        b_k[i][0] = std::generate_canonical<double, 10>(gen);
-    }
-    for (uint32_t i = 0; i < max_number_of_iterations; i++) {
-        b_k1 = matrix * b_k;
-        b_k = b_k1 / std::sqrt((b_k1 * b_k1.T())[0][0]);
-        greatest_eigenvalue_previous = greatest_eigenvalue_current;
-        greatest_eigenvalue_current = ((matrix * b_k) * b_k.T())[0][0] / (b_k * b_k.T())[0][0];
-        if (std::fabs(greatest_eigenvalue_current - greatest_eigenvalue_previous) < 0.01) {
-            break;
-        }
-    }
-    return std::fabs(greatest_eigenvalue_current);
-}
 
 std::tuple<CMatrix, CMatrix, CMatrix, CVector> calculateOptimizationMatrices(const CMatrix& A, const CVector& B, const CVector& C, const double r) {
     double R1 = 1;
@@ -108,34 +87,11 @@ double fastGradientMethod(const CMatrix& H, const CMatrix& fi, const CMatrix& F,
     return v[0][0];
 }
 
-void stringToDouble(const std::string& data_reference, std::vector<double>& data_to_fill) {
-    const char* begin = nullptr;
-    char* end = const_cast<char*>(data_reference.c_str());
-    double value;
-    do {
-        begin = end;
-        value = std::strtod(begin, &end);
-        if (begin != end) {
-            data_to_fill.push_back(value);
-        }
-    } while(begin != end);
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-    if(GPIO_Pin == B1_Pin) {
-        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-        isNewDataGoingToBeSend = true;
-    }
-}
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
 
 int main() {
-    char* pBuf, *end;
-    uint8_t buf_size = 0;
-    uint16_t iter = 0;
     double v = 0;
     std::string pythonString, valuesMatch;
     std::regex pattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
@@ -157,7 +113,7 @@ int main() {
         if (isNewDataGoingToBeSend) {
             isNewDataGoingToBeSend = false;
             // 20s wait after pressing button to read data sent from PC
-            HAL::Peripherals::GetInstance().receiveString(buf, 20000);
+            HAL::Peripherals::GetInstance().ReceiveString(buf, 20000);
             if (*buf == '\'') {
                 pythonString = reinterpret_cast<char*>(buf);
                 iterator = pythonString.cbegin();
@@ -167,17 +123,17 @@ int main() {
                     valuesMatch.pop_back(); // trim ]
                     valuesMatch.erase(0, 1); // trim [
                     if (fullMatch[1].str().find('A') != std::string::npos) {
-                        stringToDouble(valuesMatch, dict["A"]);
+                        Utils::Misc::StringToDouble(valuesMatch, dict["A"]);
                     } else if (fullMatch[1].str().find('B') != std::string::npos) {
-                        stringToDouble(valuesMatch, dict["B"]);
+                        Utils::Misc::StringToDouble(valuesMatch, dict["B"]);
                     } else if (fullMatch[1].str().find('C') != std::string::npos) {
-                        stringToDouble(valuesMatch, dict["C"]);
+                        Utils::Misc::StringToDouble(valuesMatch, dict["C"]);
                     } else if (fullMatch[1].str().find("set") != std::string::npos) {
-                        stringToDouble(valuesMatch, dict["set"]);
+                        Utils::Misc::StringToDouble(valuesMatch, dict["set"]);
                     } else if (fullMatch[1].str().find("control") != std::string::npos) {
-                        stringToDouble(valuesMatch, dict["control"]);
+                        Utils::Misc::StringToDouble(valuesMatch, dict["control"]);
                     } else if (fullMatch[1].str().find("horizon") != std::string::npos) {
-                        stringToDouble(valuesMatch, dict["horizons"]);
+                        Utils::Misc::StringToDouble(valuesMatch, dict["horizons"]);
                     }
                     iterator = fullMatch.suffix().first;
                 }
@@ -200,8 +156,8 @@ int main() {
                 W(control_horizon, 1);
                 std::tie(fi, Rw, F, Rs) = calculateOptimizationMatrices(A, B, C, w);
                 H = fi.T() * fi + Rw;
-                HAL::Peripherals::GetInstance().sendString(buf, 100);
-                L = power_iteration(H, 20), mi = power_iteration(H.Inverse(), 20);
+                HAL::Peripherals::GetInstance().SendString(buf, 100);
+                L = Utils::Misc::PowerMethod(H, 20), mi = Utils::Misc::PowerMethod(H.Inverse(), 20);
                 step = 1 / L, eigen_const = (std::sqrt(L) - std::sqrt(mi)) / (std::sqrt(L) + std::sqrt(mi));
 
                 dict.clear();
@@ -209,16 +165,11 @@ int main() {
             }
         }
         else {
-            HAL::Peripherals::GetInstance().receiveString(buf, 100);
-            pBuf = reinterpret_cast<char *>(buf);
-            xk[0][0] = std::strtod(pBuf, &end);
-            for (iter = 1; iter < xk_size; iter++) {
-                pBuf = end;
-                xk[iter][0] = std::strtod(pBuf, &end);
-            }
+            HAL::Peripherals::GetInstance().ReceiveString(buf, 100);
+            Utils::Misc::StringToDouble(reinterpret_cast<char *>(buf), xk);
             v = fastGradientMethod(H, fi, F, xk, Rs, W);
             sprintf(reinterpret_cast<char *>(buf), "%f\n", v);
-            HAL::Peripherals::GetInstance().sendString(buf, 1000);
+            HAL::Peripherals::GetInstance().SendString(buf, 1000);
         }
     }
 }

@@ -14,8 +14,8 @@ namespace HAL {
         static Peripherals& GetInstance();
         UART_HandleTypeDef GetHandleUART();
         void Init();
-        void sendString(const uint8_t* string, uint16_t timeout);
-        void receiveString(const uint8_t* string, uint16_t timeout);
+        void SendString(const uint8_t* string, uint16_t timeout);
+        void ReceiveString(const uint8_t* string, uint16_t timeout);
 
     private:
         UART_HandleTypeDef handleUART;
