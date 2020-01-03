@@ -3,6 +3,22 @@
 
 
 HAL::Peripherals::Peripherals() : initGPIO{}, handleUART{}, oscillator{}, clock{} {
+    oscillator.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+    oscillator.HSIState = RCC_HSI_ON;
+    oscillator.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+    oscillator.PLL.PLLState = RCC_PLL_ON;
+    oscillator.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    oscillator.PLL.PLLM = 16;
+    oscillator.PLL.PLLN = 336;
+    oscillator.PLL.PLLP = RCC_PLLP_DIV4;
+    oscillator.PLL.PLLQ = 7;
+
+    clock.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    clock.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    clock.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    clock.APB1CLKDivider = RCC_HCLK_DIV2;
+    clock.APB2CLKDivider = RCC_HCLK_DIV1;
+
     handleUART.Instance = USART2;
     handleUART.Init.BaudRate = 115200;
     handleUART.Init.WordLength = UART_WORDLENGTH_8B;
@@ -11,8 +27,6 @@ HAL::Peripherals::Peripherals() : initGPIO{}, handleUART{}, oscillator{}, clock{
     handleUART.Init.Mode = UART_MODE_TX_RX;
     handleUART.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     handleUART.Init.OverSampling = UART_OVERSAMPLING_16;
-    handleUART.gState = HAL_UART_STATE_READY;
-    handleUART.RxState = HAL_UART_STATE_READY;
 }
 
 
@@ -31,6 +45,7 @@ void HAL::Peripherals::Init() {
     HAL_Init();
     ConfigureSystemClock();
     InitializeGPIO();
+    HAL_UART_Init(&handleUART);
 }
 
 
@@ -52,22 +67,10 @@ void HAL::Peripherals::ConfigureSystemClock() {
     __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE2);
 
     // Initializes the CPU, AHB and APB busses clocks
-    oscillator.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-    oscillator.HSIState = RCC_HSI_ON;
-    oscillator.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-    oscillator.PLL.PLLState = RCC_PLL_ON;
-    oscillator.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-    oscillator.PLL.PLLM = 16;
-    oscillator.PLL.PLLN = 336;
-    oscillator.PLL.PLLP = RCC_PLLP_DIV4;
-    oscillator.PLL.PLLQ = 7;
+    HAL_RCC_OscConfig(&oscillator);
 
     // Initializes the CPU, AHB and APB busses clocks
-    clock.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-    clock.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    clock.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    clock.APB1CLKDivider = RCC_HCLK_DIV2;
-    clock.APB2CLKDivider = RCC_HCLK_DIV1;
+    HAL_RCC_ClockConfig(&clock, FLASH_LATENCY_2);
 }
 
 void HAL::Peripherals::InitializeGPIO() {
