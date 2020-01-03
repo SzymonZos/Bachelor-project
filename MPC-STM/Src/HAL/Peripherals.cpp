@@ -11,6 +11,8 @@ HAL::Peripherals::Peripherals() : initGPIO{}, handleUART{}, oscillator{}, clock{
     handleUART.Init.Mode = UART_MODE_TX_RX;
     handleUART.Init.HwFlowCtl = UART_HWCONTROL_NONE;
     handleUART.Init.OverSampling = UART_OVERSAMPLING_16;
+    handleUART.gState = HAL_UART_STATE_READY;
+    handleUART.RxState = HAL_UART_STATE_READY;
 }
 
 

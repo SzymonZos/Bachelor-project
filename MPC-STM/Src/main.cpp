@@ -231,7 +231,7 @@ int main() {
             }
             v = fastGradientMethod(H, fi, F, xk, Rs, W);
             sprintf(reinterpret_cast<char *>(buf), "%f\n", v);
-            HAL::Peripherals::GetInstance().sendString(buf, 100);
+            HAL::Peripherals::GetInstance().sendString(buf, 1000);
         }
     }
 }
