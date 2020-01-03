@@ -8,6 +8,7 @@
 #include <random>
 #include <tuple>
 #include "utils/Matrix.hpp"
+#include "HAL/Peripherals.hpp"
 
 UART_HandleTypeDef huart2;
 
@@ -163,16 +164,13 @@ int main() {
     CVector Rs(prediction_horizon, 1, std::to_string(1));
 
     // Reset of all peripherals, Initializes the Flash interface and the Systick.
-    HAL_Init();
-    SystemClock_Config();
-    MX_GPIO_Init();
-    MX_USART2_UART_Init();
+    HAL::Peripherals::GetInstance().Init();
 
     while (true) {
         if (isNewDataGoingToBeSend) {
             isNewDataGoingToBeSend = false;
             // 20s wait after pressing button to read data sent from PC
-            receive_data(20000);
+            HAL::Peripherals::GetInstance().receiveString(buf, 20000);
             if (*buf == '\'') {
                 pythonString = reinterpret_cast<char*>(buf);
                 iterator = pythonString.cbegin();
@@ -215,7 +213,7 @@ int main() {
                 W(control_horizon, 1);
                 std::tie(fi, Rw, F, Rs) = calculateOptimizationMatrices(A, B, C, w);
                 H = fi.T() * fi + Rw;
-                send_string(buf);
+                HAL::Peripherals::GetInstance().sendString(buf, 100);
                 L = power_iteration(H, 20), mi = power_iteration(H.Inverse(), 20);
                 step = 1 / L, eigen_const = (std::sqrt(L) - std::sqrt(mi)) / (std::sqrt(L) + std::sqrt(mi));
 
@@ -224,8 +222,7 @@ int main() {
             }
         }
         else {
-            HAL_UART_Receive(&huart2, &buf_size, 1, 100);
-            HAL_UART_Receive(&huart2, const_cast<uint8_t *>(buf), buf_size, 100);
+            HAL::Peripherals::GetInstance().receiveString(buf, 100);
             pBuf = reinterpret_cast<char *>(buf);
             xk[0][0] = std::strtod(pBuf, &end);
             for (iter = 1; iter < xk_size; iter++) {
@@ -234,7 +231,7 @@ int main() {
             }
             v = fastGradientMethod(H, fi, F, xk, Rs, W);
             sprintf(reinterpret_cast<char *>(buf), "%f\n", v);
-            send_string(buf);
+            HAL::Peripherals::GetInstance().sendString(buf, 100);
         }
     }
 }
@@ -322,21 +319,3 @@ void Error_Handler(void){}
 void send_string(const uint8_t* s) {
     HAL_UART_Transmit(&huart2, const_cast<uint8_t*>(s), strlen(reinterpret_cast<const char*>(s)), 1000);
 }
-
-
-#ifdef  USE_FULL_ASSERT
-/**
-  * @brief  Reports the name of the source file and the source line number
-  *         where the assert_param error has occurred.
-  * @param  file: pointer to the source file name
-  * @param  line: assert_param error line source number
-  * @retval None
-  */
-void assert_failed(uint8_t *file, uint32_t line)
-{ 
-  /* USER CODE BEGIN 6 */
-  /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
-}
-#endif /* USE_FULL_ASSERT */
