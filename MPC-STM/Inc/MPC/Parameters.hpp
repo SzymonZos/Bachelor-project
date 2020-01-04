@@ -9,6 +9,8 @@ namespace Control {
         CVector B;
         CVector C;
         CVector x;
+        CVector v;
+        CVector w;
     } SystemMatrices;
 
     typedef struct {

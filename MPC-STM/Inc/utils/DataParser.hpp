@@ -18,7 +18,7 @@ namespace Utils {
         void ClearStorage();
 
     private:
-        constexpr static const char* regexPattern = R"(([[:alpha:]]+)(': )(\\[.+?\\]))";
+        constexpr static const char* regexPattern = R"(([[:alpha:]]+)(': )(\[.+?\]))";
         std::map<std::string, std::vector<double>> storage;
     };
 }

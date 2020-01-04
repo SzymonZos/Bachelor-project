@@ -5,36 +5,35 @@
 
 
 double Control::MPC::FastGradientMethod(const std::string& msg) {
-    CVector v(horizons.control, 1), w = v;
     CMatrix J(1,1), J_prev(1,1);
     Utils::Misc::StringToDouble(msg, sys.x);
-
     for (uint32_t i = 0; i < 100; i++) {
         opt.W = opt.fi.T() * ((opt.F * sys.x) - opt.Rs);
-        CalculateProjectedGradientStep(v, w);
+        CalculateProjectedGradientStep();
         J_prev = J;
-        J = v.T() * opt.H * v / 2 + v.T() * opt.W;
+        J = sys.v.T() * opt.H * sys.v / 2 + sys.v.T() * opt.W;
         if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
             break;
         }
     }
-    return v[0][0];
+    return sys.v[0][0];
 }
 
 
 void Control::MPC::InitializeParameters(std::map<std::string, std::vector<double>> storage) {
     uint32_t dimension = static_cast<uint32_t>(storage["C"].size());
-
-    sys.A(dimension, dimension, storage["A"].data());
-    sys.B(dimension, 1, storage["B"].data());
-    sys.C(1, dimension, storage["C"].data());
-    sys.x(dimension, 1);
-
     controlValues.min = storage["control"][0];
     controlValues.max = storage["control"][1];
 
     horizons.prediction = storage["horizons"][0];
     horizons.control = storage["horizons"][1];
+
+    sys.A(dimension, dimension, storage["A"].data());
+    sys.B(dimension, 1, storage["B"].data());
+    sys.C(1, dimension, storage["C"].data());
+    sys.x(dimension, 1);
+    sys.v(horizons.control, 1);
+    sys.w(horizons.control, 1);
 
     opt.F(horizons.prediction, dimension);
     opt.fi(horizons.prediction, horizons.control);
@@ -55,21 +54,21 @@ void Control::MPC::InitializeParameters(std::map<std::string, std::vector<double
 }
 
 
-void Control::MPC::CalculateProjectedGradientStep(CVector& v, CVector& w) {
-    CVector gradient(v.GetRows(), 1), v_old = v;
-    gradient = opt.H * v + opt.W;
-    w = v - gradient * eigenvalues.step;
-    for (uint32_t i = 0; i < v.GetRows(); i++) {
-        if (w[i][0] < controlValues.min) {
-            v[i][0] = controlValues.min;
+void Control::MPC::CalculateProjectedGradientStep() {
+    CVector gradient(sys.v.GetRows(), 1), v_old = sys.v;
+    gradient = opt.H * sys.v + opt.W;
+    sys.w = sys.v - gradient * eigenvalues.step;
+    for (uint32_t i = 0; i < sys.v.GetRows(); i++) {
+        if (sys.w[i][0] < controlValues.min) {
+            sys.v[i][0] = controlValues.min;
         }
-        else if (w[i][0] > controlValues.max) {
-            v[i][0] = controlValues.max;
+        else if (sys.w[i][0] > controlValues.max) {
+            sys.v[i][0] = controlValues.max;
         } else {
-            v[i][0] = w[i][0];
+            sys.v[i][0] = sys.w[i][0];
         }
     }
-    w = v + (v - v_old) * eigenvalues.fastConvergence;
+    sys.w = sys.v + (sys.v - v_old) * eigenvalues.fastConvergence;
 }
 
 

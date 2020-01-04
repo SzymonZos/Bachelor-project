@@ -10,8 +10,8 @@
 
 double minControlValue;
 double maxControlValue;
-const uint32_t prediction_horizon = 10;
-const uint32_t control_horizon = 4;
+const uint32_t prediction_horizon = 15;
+const uint32_t control_horizon = 3;
 
 double power_iteration(const CMatrix& H, uint32_t max_number_of_iterations) {
     double greatest_eigenvalue_current = 0, greatest_eigenvalue_previous;
@@ -91,6 +91,7 @@ void fastGradientMethod(const CMatrix& A, const CVector& B, const CVector& C, do
     CMatrix J(1,1), J_prev(1,1);
     auto[fi, Rw, F, Rs] = calculateOptimizationMatrices(A, B, C, r);
     H = fi.T() * fi + Rw;
+    std::cout << H;
     const double L = power_iteration(H, 20), mi = power_iteration(H.Inverse(), 20);
     const double eps = 0.01, step = 1 / L, eigen_const = (std::sqrt(L) - std::sqrt(mi)) / (std::sqrt(L) + std::sqrt(mi));
 
@@ -137,7 +138,7 @@ void print_map(const __Map& m)
 }
 
 int main() {
-    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-10, 10], 'horizons': [13, 5]";
+    char python[1024] = "'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1], 'B': [0, 0, 1, 0], 'C': [1, 1, 0, 0], 'setPoint': [10], 'controlExtremeValues': [-10, 10], 'horizons': [15, 3]";
     std::string pythonString = python, valuesMatch;
     std::regex namesPattern(R"(([[:alpha:]]+)(': )(\[.+?\]))");
     std::smatch namesMatch;
@@ -177,7 +178,7 @@ int main() {
     double w = dict["set"][0];
     minControlValue = dict["control"][0];
     maxControlValue = dict["control"][1];
-//    fastGradientMethod(A, B, C, w);
+    fastGradientMethod(A, B, C, w);
 
     return 0;
 }

@@ -345,7 +345,15 @@ CMatrix CMatrix::operator()(uint32_t rows, uint32_t columns, const std::string& 
     make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
         for (uint32_t j = 0; j < columns; j++) {
-            matrix[i][j] = std::atof(value.c_str());
+            if (!std::strcmp(value.c_str(), "eye")) {
+                if (i == j) {
+                    matrix[i][j] = 1;
+                } else {
+                    matrix[i][j] = 0;
+                }
+            } else {
+                matrix[i][j] = std::atof(value.c_str());
+            }
         }
     }
     return *this;
@@ -359,7 +367,7 @@ std::ostream& operator<< (std::ostream& stream, const CMatrix& m) {
         for (uint32_t j = 0; j < columns; j++) {
             stream << m.matrix[i][j] << " ";
         }
-        stream << std::endl;
+        stream << "\t";
     }
     return stream;
 }
@@ -421,6 +429,7 @@ void CMatrix::Mul(const double& scalar) {
     }
 }
 
+
 void CMatrix::Div(const double& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("Div: Cannot divide by 0");
@@ -431,6 +440,7 @@ void CMatrix::Div(const double& scalar) {
         }
     }
 }
+
 
 CMatrix CMatrix::GetCofactor(uint32_t row, uint32_t column) const {
     CMatrix cofactor(rows - 1, columns - 1);
@@ -448,6 +458,7 @@ CMatrix CMatrix::GetCofactor(uint32_t row, uint32_t column) const {
     }
     return cofactor;
 }
+
 
 CMatrix CMatrix::GetAdjugate() const {
     if (rows != columns) {
@@ -501,6 +512,7 @@ CVector::CVector(uint32_t rows, uint32_t column, const std::string& value) : CMa
         matrix[i][0] = std::atof(value.c_str());
     }
 }
+
 
 CVector& CVector::operator= (const CMatrix& m) {
     uint32_t m_rows, m_columns;

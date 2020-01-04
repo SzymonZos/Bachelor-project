@@ -49,5 +49,5 @@ void Utils::Misc::StringToDouble(const std::string& reference, CVector& dataToFi
         if (begin != end) {
             dataToFill[i++][0] = value;
         }
-    } while(begin != end);
+    } while(begin != end && i < dataToFill.GetRows());
 }

@@ -22,7 +22,6 @@ with serial.Serial('COM3', 115200, timeout=3) as ser:
     if changeParameters:
         ser.write(bytes([len(systemParametersToSend)]))
         ser.write(systemParametersToSend.encode())
-        print(ser.readline().decode('utf-8'))
     for i in range(200):
         xToSend = np.array2string(x.flatten(), formatter={'float_kind': lambda number: "%.4f" % number})
         xToSend = xToSend[1:-1] + '\0'

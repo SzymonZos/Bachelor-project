@@ -13,8 +13,8 @@ B = [0;
 C = [1 1 0 0];
 
 
-prediction_horizon = 10; % Np
-control_horizon = 2; % Nc
+prediction_horizon = 15; % Np
+control_horizon = 3; % Nc
 
 min_control = -5;
 max_control = 5;
@@ -48,7 +48,7 @@ for i = 2 : prediction_horizon
     F(i, :) = F(i-1, :) * A;
 end
 
-x = 2 * ones(length(C), 1);
+x = 2 * zeros(length(C), 1);
 H = fi' * fi + Rw;
 step = 1/max(eig(H));
 W = fi' * (F * x - Rs);

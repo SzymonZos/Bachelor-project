@@ -22,7 +22,7 @@ namespace Control {
         Horizons horizons{};
         Eigenvalues eigenvalues{};
 
-        void CalculateProjectedGradientStep(CVector& v, CVector& w);
+        void CalculateProjectedGradientStep();
         void CalculateOptimizationMatrices();
     };
 }

@@ -4,7 +4,7 @@
 #include "utils/DataParser.hpp"
 
 int main() {
-    uint8_t buf[1024];
+    uint8_t buf[1024] = {};
     double v = 0;
     Control::MPC mpc;
     Utils::DataParser dataParser;
@@ -14,20 +14,23 @@ int main() {
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (true) {
         if (Utils::DataParser::isNewDataGoingToBeSend) {
-            Utils::DataParser::isNewDataGoingToBeSend = false;
+                Utils::DataParser::isNewDataGoingToBeSend = false;
             // 20s wait after pressing button to read data sent from PC
             HAL::Peripherals::GetInstance().ReceiveString(buf, 20000);
             if (*buf == '\'') {
                 dataParser.ParseReceivedMsg(reinterpret_cast<char*>(buf));
                 mpc.InitializeParameters(dataParser.GetStorage());
                 dataParser.ClearStorage();
-                HAL::Peripherals::GetInstance().SendString(buf, 100);
             }
         }
         else {
             HAL::Peripherals::GetInstance().ReceiveString(buf, 100);
-            v = mpc.FastGradientMethod(reinterpret_cast<char*>(buf));
-            sprintf(reinterpret_cast<char *>(buf), "%f\n", v);
+            try {
+                v = mpc.FastGradientMethod(reinterpret_cast<char*>(buf));
+                sprintf(reinterpret_cast<char*>(buf), "%f\n", v);
+            } catch (const std::exception& e) {
+                sprintf(reinterpret_cast<char*>(buf), "%s\n", e.what());
+            }
             HAL::Peripherals::GetInstance().SendString(buf, 100);
         }
     }
