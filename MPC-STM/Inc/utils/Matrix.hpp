@@ -13,7 +13,7 @@ protected:
     void make_matrix();
 
 public:
-    CMatrix() = delete;
+    CMatrix();
     CMatrix(uint32_t rows, uint32_t columns);
     CMatrix(uint32_t rows, uint32_t columns, double** mat);
     CMatrix(uint32_t rows, uint32_t columns, const double* mat);
@@ -30,6 +30,7 @@ public:
 
     void SetRow(uint32_t row, const CMatrix& v);
     void SetColumn(uint32_t column, const CMatrix& v);
+    void SetValue(double value);
 
     [[nodiscard]] double Det() const;
     [[nodiscard]] CMatrix Inverse() const;
@@ -80,6 +81,7 @@ private:
 class CVector : public CMatrix {
 
 public:
+    CVector();
     explicit CVector(uint32_t columns);
     CVector(uint32_t rows, uint32_t column);
     CVector(uint32_t columns, double* mat);

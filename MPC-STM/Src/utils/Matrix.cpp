@@ -3,6 +3,12 @@
 #include <cstring>
 
 
+CMatrix::CMatrix() : rows(1), columns(1) {
+    make_matrix();
+    matrix[0][0] = 1;
+}
+
+
 CMatrix::CMatrix(uint32_t rows, uint32_t columns) : rows(rows), columns(columns) {
     make_matrix();
     for (uint32_t i = 0; i < rows; i++) {
@@ -79,11 +85,11 @@ CMatrix::~CMatrix() {
     delete[] matrix;
 }
 
-
 void CMatrix::GetSize(uint32_t& rows, uint32_t& columns) const {
     rows = this->rows;
     columns = this->columns;
 }
+
 
 double& CMatrix::GetElement(uint32_t row, uint32_t column) const {
     if (row < 0 || column < 0 || row >= rows || column >= columns) {
@@ -129,6 +135,15 @@ void CMatrix::SetColumn(uint32_t column, const CMatrix& v) {
     }
     for (uint32_t i = 0; i < rows; i++) {
         matrix[i][column] = v[i][0];
+    }
+}
+
+
+void CMatrix::SetValue(double value) {
+    for (uint32_t i = 0; i < rows; i++) {
+        for (uint32_t j = 0; j < columns; j++) {
+            matrix[i][j] = value;
+        }
     }
 }
 
@@ -406,7 +421,6 @@ void CMatrix::Mul(const double& scalar) {
     }
 }
 
-
 void CMatrix::Div(const double& scalar) {
     if (scalar == 0) {
         throw std::invalid_argument("Div: Cannot divide by 0");
@@ -417,7 +431,6 @@ void CMatrix::Div(const double& scalar) {
         }
     }
 }
-
 
 CMatrix CMatrix::GetCofactor(uint32_t row, uint32_t column) const {
     CMatrix cofactor(rows - 1, columns - 1);
@@ -459,6 +472,9 @@ CMatrix CMatrix::GetAdjugate() const {
 }
 
 
+CVector::CVector() : CMatrix() {}
+
+
 CVector::CVector(uint32_t columns) : CMatrix(1, columns) {}
 
 
@@ -485,7 +501,6 @@ CVector::CVector(uint32_t rows, uint32_t column, const std::string& value) : CMa
         matrix[i][0] = std::atof(value.c_str());
     }
 }
-
 
 CVector& CVector::operator= (const CMatrix& m) {
     uint32_t m_rows, m_columns;

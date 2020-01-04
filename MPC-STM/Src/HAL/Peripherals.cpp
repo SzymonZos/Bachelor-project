@@ -1,11 +1,11 @@
 #include "HAL/Peripherals.hpp"
+#include "utils/DataParser.hpp"
 #include <cstring>
-extern bool isNewDataGoingToBeSend;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if(GPIO_Pin == B1_Pin) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-        isNewDataGoingToBeSend = true;
+        Utils::DataParser::isNewDataGoingToBeSend = true;
     }
 }
 
