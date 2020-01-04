@@ -14,7 +14,7 @@ int main() {
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
     while (true) {
         if (Utils::DataParser::isNewDataGoingToBeSend) {
-                Utils::DataParser::isNewDataGoingToBeSend = false;
+            Utils::DataParser::isNewDataGoingToBeSend = false;
             // 20s wait after pressing button to read data sent from PC
             HAL::Peripherals::GetInstance().ReceiveString(buf, 20000);
             if (*buf == '\'') {
