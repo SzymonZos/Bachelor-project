@@ -7,6 +7,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage[all]{nowidow}
 \graphicspath{ {graphics/} }
 \usepackage{pgfplots}
 \pgfplotsset{compat=newest}
@@ -46,7 +47,7 @@
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 
 \fancyhead{}
-\setlength{\headheight}{14.5pt}
+\setlength{\headheight}{16pt}
 \fancyhead[RO, LE]{\chaptername: \rightmark}
 
 % Forbid to split given words
@@ -66,6 +67,9 @@
 \pgfmathparse{\mysum+exp(#1)}%
 \pgfmathsmuggle\pgfmathresult\endgroup%
 }%
+\linespread{1.3}
+\usepackage{indentfirst}
+\setlength{\parindent}{10mm}
 
 \begin{document}
 

@@ -1,4 +1,45 @@
 \section{Wstęp}
+Model predictive control (MPC) jest to zaawansowana metoda sterowania, która
+polega na takim dobraniu sterowania, aby spełniało ono szereg ograniczeń. Od lat 80. XX wieku
+algorytm ten wykorzystywany jest przemyśle procesowym w~zakładach chemicznych i~rafineriach 
+ropy naftowej. W ostatnich latach MPC znalazło zastosowanie także w elektrowniach i~elektronice
+mocy. Sterowanie predykcyjne wykorzystuje dynamiczny model obiektu, najczęściej jest to empiryczny
+model pozyskany za pomocą indetyfikacji systemów. Główną zaletą MPC jest optymalizacja obecnego
+przedziału czasowego, biorąc pod uwagę przyszłe stany obiektu. Jest to osiągnięte poprzez
+optymalizację skończonego horyzonu czasowego, ale z~wykorzystaniem jedynie sterowania wyliczonego
+dla obecnej chwili czasu. Proces ten jest powtarzany z każdą iteracją algorytmu rozwiązującego
+układ równań różniczkowych opisujących dany układ. Taki schemat regulacji powoduje, że istnieje
+możliwość przewidzenia przyszłych zdarzeń (występujących zgodnie z podanym modelem wartości zadanej)
+i podjęcia odpowiednich działań regulujących pracę układem we wcześniejszych chwilach. Sterowanie
+predykcyjne jest zazwyczaj zaimplementowane jako dyskretny regulator, lecz obecnie prowadzone są
+badania mające na celu uzyskanie szybszej odpowiedzi przy użyciu specjalnie do tego przygotowanych
+układów analogowych.
+
+\section{Sposób działania} \label{sec:howitworks}
+Zasada pracy regulatora MPC polega na minimalizacji różnic między wartościami predykowanymi:
+\(y(i+p|i)\) w chwili obecnej \(i\) na przyszłą \(i+p\), a wartościami zadanymi dla tych wyjść \(r(i+p|i)\).
+Przez minimalizację tychże różnic rozumiana jest minimalizacja określonego kryterium jakości \(J\). W
+następnej chwili czasu \((i+1)\) następuje kolejny pomiar sygnału na wyjściu obiektu, a cała procedura
+powtarzana jest z takim samym horyzontem predykcji \(H(p=1,2,\dots ,H_{max})\). W tym celu stosowana jest
+więc zasada sterowania repetycyjnego bazującego na przesuwnym horyzoncie czasu. W algorytmie regulacji MPC
+obecny jest także tzw. horyzont sterowania \(L\) (gdzie \(L<H\)), po którego upływie przyrost sygnału
+sterującego wynosi zero. W ten sposób zapewnione są własności całkujące układu regulacji predykcyjnej.
+\newline Algorytmy MPC cechują się następującymi wymogami i właściwościami:
+\begin{itemize}
+	\item Wymaganie wyznaczenia wartości przyszłych sygnału sterującego.
+	\item Sterowanie według zdefiniowanej trajektorii referencyjnej dla wielkości wyjściowej.
+    \item Uwzględnienie przyszłych zmian wartości zadanej. Wcześniejsza reakcja regulatora na 
+    przyszłą zmianę wartości referencyjnej kompensuje negatywny wpływ opóźnienia na działanie układu.
+	\item Stabilna regulacja obiektów, które nie są minimalnofazowe bez uwzględnienia tego faktu podczas
+    syntezy regulatora.
+\end{itemize}
+Realizację metody sterowania predykcyjnego można zapisać w czterech następujących krokach:
+\begin{enumerate}
+    \item Pomiar lub estymacja aktualnego stanu obiektu.
+    \item Obliczenie przyszłych próbek wyjść systemu.
+    \item Zaaplikowanie sygnałów sterujących tylko do następnej chwili czasu.
+    \item Powtórzenie algorytmu dla kolejnej chwili czasu.
+\end{enumerate}
 
 \section{Model obiektu} \label{sec:model}
 Lorem ipsum.
