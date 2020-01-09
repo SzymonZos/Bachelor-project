@@ -76,13 +76,25 @@ obiektu.
 
 \section{Problem programowania kwadratowego} \label{sec:qp}
 \begin{equation}
-	R = R_{1} * \begin{bmatrix}
-	1 & 0 & 0 & 0 \\
-	0 & 1 & 0 & 0 \\
-	0 & 0 &\ddots & 0 \\
-	0 & 0 & 0 & 1
+	R_{w} = R_{1} * \begin{bmatrix}
+	1 & 0 & 0 & \cdots & 0 \\[-0.8ex]
+	0 & 1 & 0 & \cdots & 0 \\[-0.8ex]
+	0 & 0 & 1 & \cdots & 0 \\[-0.8ex]
+    \vdots & \vdots & \vdots & \ddots & \vdots \\[-0.8ex]
+    0 & 0 & 0 & \cdots & 1
 	\end{bmatrix}
-\label{eq:hessian}
+\label{eq:Rw}
+\end{equation}
+
+\begin{equation}
+	\phi = \begin{bmatrix}
+	CB & 0 & 0 & \cdots & 0 \\
+	CAB & CB & 0 & \cdots & 0 \\
+	CA^{2}B & CAB & CB & \cdots & 0 \\
+    \vdots & \vdots & \vdots &  & \vdots \\
+    CA^{Np-1}B & CA^{Np-2}B & CA^{Np-3}B & \cdots & CA^{Np-Nc}B
+	\end{bmatrix}
+\label{eq:phi}
 \end{equation}
 
 \section{Pozostałe rodzaje regulatorów klasy MPC} \label{sec:other}

@@ -9,7 +9,7 @@ systemParameters = {'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
                     'C': [1, 1, 0, 0],
                     'setPoint': [10],
                     'controlExtremeValues': [-10, 10],
-                    'horizons': [4, 3]}
+                    'horizons': [15, 5]}
 systemParametersToSend = str(systemParameters)[1:-1] + '\n\0'
 A = np.array(systemParameters['A']).reshape(-1, int(np.sqrt(len(systemParameters['A']))))
 B = np.array(systemParameters['B']).reshape(len(systemParameters['B']), -1)
@@ -28,9 +28,9 @@ with serial.Serial('COM3', 115200, timeout=3) as ser:
         xToSend = xToSend[1:-1] + '\0'
         ser.write(bytes([len(xToSend)]))
         ser.write(xToSend.encode())
-        v = float(ser.readline().decode('utf-8'))
+        v = float(ser.readline().decode('utf-8')) # dodać timestampy
         x = np.dot(A, x) + v * B
-        y.append(np.dot(C, x).item(0))
+        y.append(np.dot(C, x).item(0)) # dodać wykres sterowania
 
 plt.plot(y, 'ro'), plt.ylabel('y'), plt.xlabel('i')
 plt.show()
