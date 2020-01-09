@@ -75,8 +75,31 @@ obiektu.
 \end{align*}
 
 \section{Problem programowania kwadratowego} \label{sec:qp}
-Lorem ipsum.
+\begin{equation}
+	R = R_{1} * \begin{bmatrix}
+	1 & 0 & 0 & 0 \\
+	0 & 1 & 0 & 0 \\
+	0 & 0 &\ddots & 0 \\
+	0 & 0 & 0 & 1
+	\end{bmatrix}
+\label{eq:hessian}
+\end{equation}
 
 \section{Pozostałe rodzaje regulatorów klasy MPC} \label{sec:other}
 
+\begin{itemize}
+	\item Nonlinear MPC
+	\item Explicit MPC
+    \item Robust MPC
+\end{itemize}
+
 \section{Wady i zalety w porównaniu z regulatorem PID} \label{sec:comparison}
+Dorobić tabelę
+
+Porównanie regulacji PID i MPC
+Cecha	Regulator PID	Regulator predykcyjny
+ograniczenia	brak informacji o ograniczeniach	ograniczenia uwzględnione w projekcie
+wartość zadana	wartość zadana daleka od ograniczeń	wartość zadana bliska ograniczeniom
+optymalność	sterowanie nie ma charakteru optymalnego	sterowanie ma charakter optymalny
+liczba wejść i wyjść układu	jedno wejście i jedno wyjście	wiele wejść i wiele wyjść
+model matematyczny	model matematyczny nie jest konieczny

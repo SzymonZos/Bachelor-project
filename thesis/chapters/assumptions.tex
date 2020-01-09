@@ -1,37 +1,49 @@
 \section{Założenia projektowe} \label{sec:assumptions}
-l i n i o w y układ
+\begin{itemize}
+	\item Układ liniowy, deskrytny
+	\item Odpowiedź MCU w czasie rzeczywistym
+    \item Poprawność wyliczonych wartości
+    \item Opisany przypadek MPC do implementacji -> fast gradient method
+\end{itemize}
 
 \section{Architektura systemu} \label{sec:system}
-Lorem ipsum. Cokolwiek o STMie / ARMie.
 
 \subsection{Platforma STM} \label{sec:stm}
-Lorem ipsum.
+STM32F4 series of high-performance MCUs with DSP and FPU instructions
 
 \subsection{Procesor - architektura ARM} \label{sec:arm}
-Lorem ipsum.
+ARM, previously Advanced RISC Machine, originally Acorn RISC Machine, is a family of reduced
+instruction set computing (RISC) architectures for computer processors, configured for various
+environments.
 
 \section{Narzędzia programistyczne} \label{sec:prog}
 
 \subsection{Języki programowania C/C++} \label{sec:cpp}
-A gdzie Rust?!
+Paradygmaty, co, jak i dlaczego.
 
 \subsection{Język programowania Python} \label{sec:python}
-pytong
+Wysokopoziomowe ułatwienie testowania z PC.
 
 \subsection{Środowisko MATLAB} \label{sec:matlab}
-matlablabla
+Sprawdzone środowisko do obliczeń macierzowych i układów dynamicznych.
+
+\subsection{Cube} \label{sec:cube}
+Generator kodu do biblioteki HAL.
 
 \subsection{Biblioteka HAL} \label{sec:hal}
-hal
+W miarę wysokopziomowe rozwiązanie jak na standardy mikroprocków, jednak zostały napotkane problemy.
 
 \subsection{CMake} \label{sec:cmake}
-cmake
+Cross platform make, możliwość kompilacji z różnych systemów operacyjnych.
 
 \subsection{Kompilator i linker} \label{sec:gcc}
-arm none eabi gcc
+arm none eabi gcc, coś o opensource
+
+\subsection{Regex} \label{sec:regex}
+Krótko o wyrażeniach regularnych.
 
 \section{Przykład referencyjny} \label{sec:ref}
-Lorem ipsum.
+Ten z simulinka + testowanie w matlabie.
 
 \section{Sposób testowania} \label{sec:tests}
-Lorem ipsum.
+Skrypt w Pythonie
