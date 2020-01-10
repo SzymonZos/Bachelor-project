@@ -17,12 +17,12 @@ układów analogowych.
 
 \section{Sposób działania} \label{sec:howitworks}
 Zasada pracy regulatora MPC polega na minimalizacji różnic między wartościami predykowanymi:
-$y(i+p|i)$ w chwili obecnej $i$ na przyszłą $i+p$, a wartościami zadanymi dla tych wyjść $r(i+p|i)$.
+$y_{k+i|k}$ w chwili obecnej $k$ na przyszłą $k+i$, a wartościami zadanymi dla tych wyjść $r(i)$.
 Przez minimalizację tychże różnic rozumiana jest minimalizacja określonego kryterium jakości $J$. W
-następnej chwili czasu $(i+1)$ następuje kolejny pomiar sygnału na wyjściu obiektu, a cała procedura
-powtarzana jest z takim samym horyzontem predykcji $H(p=1,2,\dots ,H_{max})$. W tym celu stosowana jest
+następnej chwili czasu $(k+1)$ następuje kolejny pomiar sygnału na wyjściu obiektu, a cała procedura
+powtarzana jest z takim samym horyzontem predykcji $N_{p}$. W tym celu stosowana jest
 więc zasada sterowania repetycyjnego bazującego na przesuwnym horyzoncie czasu. W algorytmie regulacji MPC
-obecny jest także tzw. horyzont sterowania $L$ (gdzie $L \leqslant H$), po którego upływie przyrost sygnału
+obecny jest także tzw. horyzont sterowania $N_{c}$ (gdzie $N_{c} \leqslant N_{p}$), po którego upływie przyrost sygnału
 sterującego wynosi zero. W ten sposób zapewnione są własności całkujące układu regulacji predykcyjnej.
 \newline Algorytmy MPC cechują się następującymi wymogami i właściwościami:
 \begin{itemize}
@@ -63,29 +63,59 @@ poprzez minimalizację wskaźnika jakości regulacji, który jest inheretnie zwi
 obiektu.
 \newline W przypadku skalarnym funkcję celu można opisać następującym równaniem:
 \begin{equation}
-    J=\sum _{i=1}^{N}w_{x_{i}}(r_{i}-x_{i})^{2}+\sum _{i=1}^{N}w_{u_{i}}{u_{i}}^{2}
+    \begin{dcases}
+        J=R_{y}\sum _{i=1}^{N_{p}}(r_{k}-y_{i|k})^{2}+R_{u}\sum _{i=1}^{N_{c}}{(u_{i|k}-u_{k-1})}^{2}\\
+        x_{k+1}=Ax_{k}+Bu_{k}\\
+        y_{k}=Cx_{k} 
+    \end{dcases}
 \label{eq:quality}
 \end{equation}
 \begin{align*}
-    x_{i} &= i\text{-ta zmienna sterowana}\\
-    r_{i} &= i\text{-ta zmienna referencyjna}\\
-    u_{i} &= i\text{-ta zmienna sterująca}\\
-    w_{x_{i}} &= \text{współczynnik wagowy zmiennej }x_{i}\\
-    w_{u_{i}} &= \text{współczynnik wagowy }u_{i}
+    x_{k} &= \text{wektor zmiennych stanu w chwili }k\\
+    y_{k} &= \text{zmienna wyjściowa w chwili} k\\
+    r_{k} &= \text{zmienna referencyjna w chwili} k\\
+    u_{k} &= \text{sterowanie w chwili }k\\
+    N_{p} &= \text{horyzont predykcji}\\
+    N_{c} &= \text{horyzont sterowań}\\
+    i|k &= \text{predykcja w chwili }k\text{ odnosząca się do chwili }i\\
+    R_{y} &= \text{współczynnik wagowy wyjścia }y\\
+    R_{u} &= \text{współczynnik wagowy sterowania}u\\
+    A, B, C &= \text{macierze przestrzeni stanu}
 \end{align*}
 
 \section{Problem programowania kwadratowego} \label{sec:qp}
 \begin{equation}
-	R_{w} = R_{1} * \begin{bmatrix}
-	1 & 0 & 0 & \cdots & 0 \\[-0.8ex]
-	0 & 1 & 0 & \cdots & 0 \\[-0.8ex]
-	0 & 0 & 1 & \cdots & 0 \\[-0.8ex]
-    \vdots & \vdots & \vdots & \ddots & \vdots \\[-0.8ex]
-    0 & 0 & 0 & \cdots & 1
-	\end{bmatrix}
+    J=\frac{1}{2}U^{T}HU+W^{T}U
+    \label{eq:J}
+\end{equation}
+\begin{equation}
+	U = \begin{bmatrix}
+    u_{k|k}-u_{k-1} \\
+	u_{k+1|k}-u_{k-1} \\
+    \vdots \\
+    u_{k+N_{c}-1|k}-u_{k-1}
+	\end{bmatrix}_{N_{c} \times 1}
+\label{eq:U}
+\end{equation}
+\begin{equation}
+    H={\phi}^{T}\phi+R_{u}
+    \label{eq:H}
+\end{equation}
+\begin{equation}
+    W={\phi}^{T}(R_{s}-Fx_{k})
+    \label{eq:W}
+\end{equation}
+\begin{equation}
+    R_{u} = R_{1} 
+    \begin{bmatrix}
+	    1 & 0 & 0 & \cdots & 0 \\[-0.8ex]
+	    0 & 1 & 0 & \cdots & 0 \\[-0.8ex]
+	    0 & 0 & 1 & \cdots & 0 \\[-0.8ex]
+        \vdots & \vdots & \vdots & \ddots & \vdots \\[-0.8ex]
+        0 & 0 & 0 & \cdots & 1
+	\end{bmatrix}_{N_{c} \times N_{c}}
 \label{eq:Rw}
 \end{equation}
-
 \begin{equation}
 	\phi = \begin{bmatrix}
 	CB & 0 & 0 & \cdots & 0 \\
@@ -94,7 +124,26 @@ obiektu.
     \vdots & \vdots & \vdots &  & \vdots \\
     CA^{Np-1}B & CA^{Np-2}B & CA^{Np-3}B & \cdots & CA^{Np-Nc}B
 	\end{bmatrix}
-\label{eq:phi}
+\label{eq:phi}_{N_{p} \times N_{c}}
+\end{equation}
+\begin{equation}
+	F = \begin{bmatrix}
+	CA \\
+	CA^{2} \\
+	CA^{3} \\
+    \vdots \\
+    CA^{Np}B
+	\end{bmatrix}_{N_{p} \times 1}
+\label{eq:F}
+\end{equation}
+\begin{equation}
+    R_{s} = r_{k}\begin{bmatrix}
+    1 \\
+    1 \\
+    \vdots \\
+    1
+    \end{bmatrix}_{N_{p} \times 1}
+\label{eq:Y}
 \end{equation}
 
 \section{Pozostałe rodzaje regulatorów klasy MPC} \label{sec:other}
