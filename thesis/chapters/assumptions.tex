@@ -1,6 +1,6 @@
 \section{Założenia projektowe} \label{sec:assumptions}
 \begin{itemize}
-	\item Układ liniowy, deskrytny
+	\item Układ liniowy, dyskretny
 	\item Odpowiedź MCU w czasie rzeczywistym
     \item Poprawność wyliczonych wartości
     \item Opisany przypadek MPC do implementacji -> fast gradient method
@@ -9,29 +9,56 @@
 
 \section{Architektura systemu} \label{sec:system}
 
+\subsection{Procesor - architektura ARM} \label{sec:arm}
+ARM (Advanced RISC Machine) jest to rodzina architektur procesorów typu RISC (Reduced Instruction
+Set Computing). Charakteryzuje się zmniejszoną liczbą instrukcji w porównaniu do CISC, co
+przekłada się na mniejsze zużycie energii. Wynika z tego zastosowanie architektury ARM
+w systemach wbudowanych. %więcej dopisać
+
 \subsection{Platforma STM} \label{sec:stm}
 STM32 jest to rodzina 32 bitowych mikrokontrolerów produkowana przez STMicroelectronics.
 Kontrolery są podzielone na odpowiednie serie, jednak łączy je bazowanie na 32 bitowym
 rdzeniu firmy ARM. Grupy te różnią się m.in. częstotliwością taktowania, obsługiwanymi
 urządzeniami peryferyjnymi, wsparciem dla arytmetyki zmiennoprzecinkowej, jak i możliwością
 cyfrowego przetwarzania sygnałów.
-Użyty w projekcie zestaw uruchomieniowy STM32 Nucleo F401RE zapewnia elastyczne
+Użyty w projekcie zestaw uruchomieniowy STM32 Nucleo F401RE jest wyposażony w mikrokontroler
+STM32F401, który zapewnia wsparcie dla wspomnianej wcześniej jednostki zmiennoprzecinkowej (FPU),
+jak również instrukcji cyfrowego przetwarzania sygnałów (DSP). Procesor ten jest oparty na
+architekturze ARM Cortex M4. Platforma Nucleo za to dostarcza elastyczne
 możliwości budowania oraz projektowania nowych rozwiązań sprzętowych, zarówno
 doświadczonym jak i początkującym, użytkownikom. Moduł ten łączy w sobie różne kombinacje
-aspektów wydajności i zużycia energii dostarczone przez mikrokontroler STM32F401.
-W porównaniu do konkurencyjnych platform oferuje znacznie mniejsze zużycie energii
-podczas pracy z zasilaczem impulsowym.
-STM32F4 series of high-performance MCUs with DSP and FPU instructions
-
-\subsection{Procesor - architektura ARM} \label{sec:arm}
-ARM, previously Advanced RISC Machine, originally Acorn RISC Machine, is a family of reduced
-instruction set computing (RISC) architectures for computer processors, configured for various
-environments.
+aspektów wydajności oraz zużycia energii. W porównaniu do konkurencyjnych platform oferuje
+znacznie mniejsze zużycie energii podczas pracy z zasilaczem impulsowym.
+Poniżej zamieszczono pełną specyfikację.
 
 \section{Narzędzia programistyczne} \label{sec:prog}
 
 \subsection{Języki programowania C/C++} \label{sec:cpp}
-Paradygmaty, co, jak i dlaczego.
+C jest to proceduralny, strukturalny, statycznie typowany język programowania, który znajduje
+zastosowanie w implementacji systemów operacyjnych i wbudowanych. C domyślnie zapewnia
+narzędzia, które w sposób efektywny są kompilowane do kodu maszynowego. Taki kod ma porównywalną
+wydajność do programów napisanych jedynie za pomocą asemblera. Jest to powiązane ze względną
+niskopoziomowością języka C, która zrealizowana została m.in. za pomocą ręcznej alokacji
+dynamicznej pamięci, a także minimalnego wspracia w czasie wykonywania programu. 
+ 
+C++ jest to wieloparadygmatowy, statycznie typowany, kompilowalny język programowania zapewniający
+znacznie wyższy poziom abstrakcji w porównaniu do języka C. Na potrzeby pracy inżynierskiej
+wykorzystano najnowszy, w pełni dostępny, standard tego języka - C++17. 
+Wspomniana abstrakcja danych została
+zrealizowana za pomocą zastosowania paradygmatu programowania obiektowego. Zastosowanie interfejsów
+i "schowanie" implementacji programu umożliwia lepsze przeprowadzenie testów jednostkowych, a także
+budowę wieloplatformowych aplikacji. Podejście obiektowe umożliwia ponadto zaprowadzenie znacznie
+większego porządku w projektowaniu danego rozwiązania. Jednakże największym atutem takiego 
+rozwiązania jest hermetyzacja danych, która zapobiega wprowadzeniu innych wartości do zmiennych
+przechowywanych w danej klasie w niepożądanym miejscu programu.
+W przypadku programowania rozwiązań przeznaczonych pod współpracę z systemami wbudowanymi użycie
+najnowszych możliwości nowszych standardów języka C++ nie jest czasem możliwe. Przykładem jest
+w tym przypadku obsługa wyjątków, która pochłania znaczne ilości mocy obliczeniowej, jak
+i potrzebnej pamięci. Zagrożeniem jest także używanie Standard Template Library (STL), biblioteki
+zawierającej standardowe algorytmy, kontenery i iteratory. Implementacja tejże biblioteki obfita
+jest w operacje na stercie, któtych użycie powinno być minimalizowane w świecie systemów
+wbudowanych ze względu na fragmentację niewielkiej ilości dostępnej pamięci oraz dłuższy czas
+jej alokacji i dealokacji. Ponadto STL zawiera operacje rzucające wcześniej wymienione wyjątki. 
 
 \subsection{Język programowania Python} \label{sec:python}
 Wysokopoziomowe ułatwienie testowania z PC.
@@ -58,4 +85,4 @@ Krótko o wyrażeniach regularnych.
 Ten z simulinka + testowanie w matlabie.
 
 \section{Sposób testowania} \label{sec:tests}
-Skrypt w Pythonie
+Skrypt w Pythonie + HIL

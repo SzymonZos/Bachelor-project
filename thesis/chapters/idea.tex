@@ -6,7 +6,7 @@ ropy naftowej. W ostatnich latach MPC znalazło zastosowanie także w elektrowni
 mocy. Sterowanie predykcyjne wykorzystuje dynamiczny model obiektu, najczęściej jest to empiryczny
 model pozyskany za pomocą indetyfikacji systemów. Główną zaletą MPC jest optymalizacja obecnego
 przedziału czasowego, biorąc pod uwagę przyszłe stany obiektu. Jest to osiągnięte poprzez
-optymalizację skończonego horyzonu czasowego, ale z~wykorzystaniem jedynie sterowania wyliczonego
+optymalizację funkcji jakości w przedziale skończonego horyzontu czasowego, ale z~wykorzystaniem jedynie sterowania wyliczonego
 dla obecnej chwili czasu. Proces ten jest powtarzany z każdą iteracją algorytmu rozwiązującego
 układ równań różniczkowych opisujących dany układ. Taki schemat regulacji powoduje, że istnieje
 możliwość przewidzenia przyszłych zdarzeń (występujących zgodnie z podanym modelem wartości zadanej)
@@ -42,7 +42,7 @@ Realizację metody sterowania predykcyjnego można zapisać w czterech następuj
 \end{enumerate}
 
 \section{Model obiektu} \label{sec:model}
-Do poprawności działania regulatora MPC niezbędna jest znajomość modelu obiektu, który ma być wysterowany.
+Do poprawności działania regulatora MPC niezbędna jest identyfikacja modelu obiektu, który ma być wysterowany.
 Obecnie wykorzystuje się model w postaci równań stanu, podczas gdy w przeszłości korzystano z modelu
 odpowiedzi skokowej. Takie podejście wymaga także zaprojektowania obserwatora stanu, używając do tego
 metod znanych z teorii sterowania. Model obiektu może być zarówno liniowy, jak i nieliniowy. Jednakże,
@@ -155,12 +155,18 @@ obiektu.
 \end{itemize}
 
 \section{Wady i zalety w porównaniu z regulatorem PID} \label{sec:comparison}
-Dorobić tabelę
 
-Porównanie regulacji PID i MPC
-Cecha	Regulator PID	Regulator predykcyjny
-ograniczenia	brak informacji o ograniczeniach	ograniczenia uwzględnione w projekcie
-wartość zadana	wartość zadana daleka od ograniczeń	wartość zadana bliska ograniczeniom
-optymalność	sterowanie nie ma charakteru optymalnego	sterowanie ma charakter optymalny
-liczba wejść i wyjść układu	jedno wejście i jedno wyjście	wiele wejść i wiele wyjść
-model matematyczny	model matematyczny nie jest konieczny
+\begin{table}[htb]
+	\centering
+	\begin{tabular}{c|c|c}
+	\toprule
+	Cecha & Regulator PID & Regulator MPC \\ \bottomrule
+	ograniczenia wartości & brak & \makecell{uwzględnione w projekcie:\\twarde albo miękkie} \\ \midrule
+	optymalność sterowania & brak & charakter optymalny \\ \midrule
+	liczba wejść i wyjść & zazwyczaj SISO & MIMO \\ \midrule
+	model matematyczny & nie jest konieczny & \makecell{niezbędny (może być wyliczony \\ iteracyjnie poprzez indetyfikację procesu)} \\
+	\bottomrule
+	\end{tabular}
+\caption{Porównanie regulacji PID i MPC}
+\label{tab:comp_pid_mpc}
+\end{table}
