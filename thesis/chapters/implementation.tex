@@ -6,7 +6,7 @@ Przydałby się rysunek z przepływem informacji + jak działa STM w połączeni
 \subsection{Obiektowość} \label{sec:objects}
 C++, singleton, hermetyzacja danych, clean code
 \begin{listing}[htb]
-\begin{minted}{cpp}
+\begin{minted}[linenos, breaklines]{cpp}
 #ifndef MPC_STM_DATAPARSER_HPP
 #define MPC_STM_DATAPARSER_HPP
 
@@ -37,27 +37,21 @@ namespace Utils {
 }
 
 #endif //MPC_STM_DATAPARSER_HPP
-
 \end{minted}
 \caption{DataParser.hpp: Przykładowy plik nagłówkowy}
 \label{lst:header_example`}
 \end{listing}
 
 \begin{listing}[htb]
-\begin{minted}{cpp}
-#include "utils/DataParser.hpp"
-#include "utils/Misc.hpp"
-#include <regex>
-#include <algorithm>
-
+\centering
+\begin{minted}[linenos, breaklines]{cpp}
+#include ...
 
 bool Utils::DataParser::isNewDataGoingToBeSend = false;
-
 
 std::map<std::string, std::vector<double>> Utils::DataParser::GetStorage() const {
     return storage;
 }
-
 
 void Utils::DataParser::ParseReceivedMsg(const std::string& msg) {
     std::string valuesMatch;
@@ -87,18 +81,16 @@ void Utils::DataParser::ParseReceivedMsg(const std::string& msg) {
     }
 }
 
-
 void Utils::DataParser::ClearStorage() {
     storage.clear();
 }
-
 \end{minted}
 \caption{DataParser.cpp: Przykładowy plik źródłowy}
 \label{lst:source_example`}
 \end{listing}
 
 \begin{listing}[htb]
-\begin{minted}{cpp}
+\begin{minted}[linenos, breaklines]{cpp}
 namespace HAL {
     class Peripherals {
     public:
@@ -116,7 +108,7 @@ namespace HAL {
 \end{listing}
 
 \begin{listing}[htb]
-\begin{minted}{cpp}
+\begin{minted}[linenos, breaklines]{cpp}
 HAL::Peripherals& HAL::Peripherals::GetInstance() {
     static Peripherals instance;
     return instance;
@@ -129,7 +121,7 @@ HAL::Peripherals& HAL::Peripherals::GetInstance() {
 \subsection{Komunikacja} \label{sec:uart}
 Ramka, schemat, itp
 \begin{listing}[htb]
-\begin{minted}{cpp}
+\begin{minted}[linenos, breaklines]{cpp}
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     if(GPIO_Pin == B1_Pin) {
         HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
@@ -142,7 +134,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 \end{listing}
 
 \begin{listing}[htb]
-\begin{minted}{cpp}
+\begin{minted}[linenos, breaklines]{cpp}
     void HAL::Peripherals::SendString(const uint8_t* string, uint16_t timeout) {
         HAL_UART_Transmit(&handleUART, const_cast<uint8_t*>(string),
         std::strlen(reinterpret_cast<const char*>(string)), timeout);
@@ -153,7 +145,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 \end{listing}
 
 \begin{listing}[htb]
-\begin{minted}{cpp}
+\begin{minted}[linenos, breaklines]{cpp}
 void HAL::Peripherals::ReceiveString(const uint8_t* string, uint16_t timeout) {
     uint8_t bufSize = 0;
     HAL_UART_Receive(&handleUART, &bufSize, 1, timeout);
@@ -167,7 +159,7 @@ void HAL::Peripherals::ReceiveString(const uint8_t* string, uint16_t timeout) {
 \subsection{Klasa macierzy} \label{sec:matrices}
 
 \begin{listing}[htb]
-\begin{minted}{cpp}
+\begin{minted}[linenos, breaklines]{cpp}
 #include ...
 
 class CMatrix {
@@ -218,10 +210,196 @@ public:
 \end{listing}
 
 \subsection{Aglorytm} \label{sec:algorithm}
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{cpp}
+double Control::MPC::FastGradientMethod(const std::string& msg) {
+    CMatrix J(1,1), J_prev(1,1);
+    Utils::Misc::StringToDouble(msg, sys.x);
+    for (uint32_t i = 0; i < 100; i++) {
+        opt.W = opt.fi.T() * ((opt.F * sys.x) - opt.Rs);
+        CalculateProjectedGradientStep();
+        J_prev = J;
+        J = sys.v.T() * opt.H * sys.v / 2 + sys.v.T() * opt.W;
+        if (std::fabs(J_prev[0][0] - J[0][0]) < eps) {
+            break;
+        }
+    }
+    return sys.v[0][0];
+}
+\end{minted}
+\caption{MPC.cpp: Implementacja szybkiej metody gradientowej}
+\label{lst:gradient_cpp}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{cpp}
+void Control::MPC::CalculateProjectedGradientStep() {
+    CVector gradient(sys.v.GetRows(), 1), v_old = sys.v;
+    gradient = opt.H * sys.v + opt.W;
+    sys.w = sys.v - gradient * eigenvalues.step;
+    for (uint32_t i = 0; i < sys.v.GetRows(); i++) {
+        if (sys.w[i][0] < controlValues.min) {
+            sys.v[i][0] = controlValues.min;
+        }
+        else if (sys.w[i][0] > controlValues.max) {
+            sys.v[i][0] = controlValues.max;
+        } else {
+            sys.v[i][0] = sys.w[i][0];
+        }
+    }
+    sys.w = sys.v + (sys.v - v_old) * eigenvalues.fastConvergence;
+}
+\end{minted}
+\caption{MPC.cpp: Implementacja obliczenia kolejnego kroku w algorytmie gradientowym}
+\label{lst:step_cpp}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{cpp}
+void Control::MPC::InitializeParameters(std::map<std::string, std::vector<double>> storage) {
+    uint32_t dimension = static_cast<uint32_t>(storage["C"].size());
+    controlValues.min = storage["control"][0];
+    controlValues.max = storage["control"][1];
+
+    horizons.prediction = storage["horizons"][0];
+    horizons.control = storage["horizons"][1];
+
+    sys.A(dimension, dimension, storage["A"].data());
+    sys.B(dimension, 1, storage["B"].data());
+    sys.C(1, dimension, storage["C"].data());
+    sys.x(dimension, 1);
+    sys.v(horizons.control, 1);
+    sys.w(horizons.control, 1);
+
+    opt.F(horizons.prediction, dimension);
+    opt.fi(horizons.prediction, horizons.control);
+    opt.Rw(horizons.control, horizons.control, "eye");
+    opt.Rs(horizons.prediction, 1);
+    opt.H(horizons.control, horizons.control);
+    opt.W(horizons.control, 1);
+    opt.scalarRs = storage["set"][0];
+    opt.scalarRw = 1;
+
+    CalculateOptimizationMatrices();
+
+    eigenvalues.max = Utils::Misc::PowerMethod(opt.H, 20);
+    eigenvalues.min = Utils::Misc::PowerMethod(opt.H.Inverse(), 20);
+    eigenvalues.step = 1 / eigenvalues.max;
+    eigenvalues.fastConvergence = (std::sqrt(eigenvalues.max) - std::sqrt(eigenvalues.min)) /
+                                  (std::sqrt(eigenvalues.max) + std::sqrt(eigenvalues.min));
+}
+\end{minted}
+\caption{MPC.cpp: Implementacja zadawania nowych parametrów}
+\label{lst:parameters_cpp}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{cpp}
+void Control::MPC::CalculateOptimizationMatrices() {
+    opt.Rw *= opt.scalarRw;
+    opt.Rs.SetValue(opt.scalarRs);
+    CVector productMatrix(sys.C.GetColumns());
+    productMatrix = sys.C * (sys.A ^ (horizons.prediction - horizons.control));
+    for (uint32_t i = horizons.prediction; i != 0; i--) {
+        for (uint32_t j = horizons.control; j != 0; j--) {
+            if (i == horizons.prediction) {
+                if (j < horizons.control) {
+                    productMatrix *= sys.A;
+                }
+                opt.fi[i-1][j-1] = (productMatrix * sys.B)[0][0];
+            } else if (i < j && j < horizons.control) {
+                opt.fi[i-1][j-1] = opt.fi[i][j];
+            }
+        }
+    }
+    opt.H = opt.fi.T() * opt.fi + opt.Rw;
+    productMatrix = sys.C * sys.A;
+    for (uint32_t i = 0; i < horizons.prediction; i++) {
+        opt.F.SetRow(i, productMatrix);
+        productMatrix *= sys.A;
+    }
+}
+\end{minted}
+\caption{MPC.cpp: Implementacja wyliczenia nowych macierzy optymalizacyjnych}
+\label{lst:opt_cpp}
+\end{listing}
+
 Jak zostało zrealizowane założenie
 
 \section{Szczegóły implementacji - PC} \label{sec:details-pc}
-Krótko o skrypcie w Pythonie.
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{python}
+projectPath = os.path.dirname(os.path.abspath(__file__))
+changeParameters = True
+systemParameters = {'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
+                    'B': [0, 0, 1, 0],
+                    'C': [1, 1, 0, 0],
+                    'setPoint': [10],
+                    'controlExtremeValues': [-10, 10],
+                    'horizons': [30, 8]}
+systemParametersToSend = str(systemParameters)[1:-1] + '\n\0'
+A = np.array(systemParameters['A']).\
+    reshape(-1, int(np.sqrt(len(systemParameters['A']))))
+B = np.array(systemParameters['B']).\
+    reshape(len(systemParameters['B']), -1)
+C = np.array(systemParameters['C'])
+x = np.zeros((len(systemParameters['B']), 1))
+y = []
+u = []
+timer = []
+\end{minted}
+\caption{Inicjalizacja danych w skrypcie Pythona}
+\label{lst:init_py}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{python}
+with serial.Serial('COM3', 115200, timeout=20) as ser:
+    if changeParameters:
+        ser.write(bytes([len(systemParametersToSend)]))
+        ser.write(systemParametersToSend.encode())
+        startTimer = time.time()
+        print(ser.readline().decode('utf-8'))
+        endTimer = time.time()
+        initTimer = endTimer - startTimer
+    for i in range(200):
+        xToSend = np.array2string(
+            x.flatten(), formatter={'float_kind': lambda number: "%.4f" % number})
+        xToSend = xToSend[1:-1] + '\0'
+        ser.write(bytes([len(xToSend)]))
+        ser.write(xToSend.encode())
+        startTimer = time.time()
+        v = float(ser.readline().decode('utf-8'))
+        endTimer = time.time()
+        x = np.dot(A, x) + v * B
+        y.append(np.dot(C, x).item(0))
+        timer.append(endTimer - startTimer)
+        u.append(v)
+\end{minted}
+\caption{Główna pętla przeprowadzająca test HIL}
+\label{lst:serial_py}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{python}
+_, fig = plt.subplots(2, 1, figsize=(6.4, 9.6))
+fig[0].set_title('Wartość wyjścia obiektu w zależności od chwili czasu')
+fig[0].plot(y, 'ro'), fig[0].set_ylabel('y'), fig[0].set_xlabel('i')
+fig[1].set_title('Wartość sterowania w zależności od chwili czasu')
+fig[1].plot(u, 'bo'), fig[1].set_ylabel('u'), fig[1].set_xlabel('i')
+plt.savefig(r'{0}\plots\horizons_{1}.png'.format
+            (projectPath, systemParameters['horizons']), format='png', bbox_inches='tight')
+
+with open('log.txt', 'a') as logger:
+    logger.write(str(systemParameters['A']))
+    logger.write('Init time, Mean of timestamps,'
+                 ' Stdev of timestamps, Max of timestamps\n')
+    logger.write(f"{initTimer:.4} {statistics.mean(timer):.4}"
+                 f"{statistics.stdev(timer):.4} {max(timer):.4}\n")
+\end{minted}
+\caption{Zapisywanie danych i wykresów}
+\label{lst:write_py}
+\end{listing}
 
 \section{Problemy napotkane podczas realizacji} \label{sec:problems}
 HAL - przerwania, ramka UARTa
