@@ -1,37 +1,59 @@
+import os
 import serial
 import numpy as np
 import matplotlib.pyplot as plt
+import time
+import statistics
 
 
+projectPath = os.path.dirname(os.path.abspath(__file__))
 changeParameters = True
 systemParameters = {'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
                     'B': [0, 0, 1, 0],
                     'C': [1, 1, 0, 0],
                     'setPoint': [10],
                     'controlExtremeValues': [-10, 10],
-                    'horizons': [15, 5]}
+                    'horizons': [30, 8]}
 systemParametersToSend = str(systemParameters)[1:-1] + '\n\0'
 A = np.array(systemParameters['A']).reshape(-1, int(np.sqrt(len(systemParameters['A']))))
 B = np.array(systemParameters['B']).reshape(len(systemParameters['B']), -1)
 C = np.array(systemParameters['C'])
 x = np.zeros((len(systemParameters['B']), 1))
 y = []
+u = []
+timer = []
 print(systemParametersToSend)
 
-with serial.Serial('COM3', 115200, timeout=3) as ser:
+with serial.Serial('COM3', 115200, timeout=20) as ser:
     if changeParameters:
         ser.write(bytes([len(systemParametersToSend)]))
         ser.write(systemParametersToSend.encode())
+        startTimer = time.time()
         print(ser.readline().decode('utf-8'))
+        endTimer = time.time()
+        initTimer = endTimer - startTimer
     for i in range(200):
         xToSend = np.array2string(x.flatten(), formatter={'float_kind': lambda number: "%.4f" % number})
         xToSend = xToSend[1:-1] + '\0'
         ser.write(bytes([len(xToSend)]))
         ser.write(xToSend.encode())
-        v = float(ser.readline().decode('utf-8')) # dodać timestampy
+        startTimer = time.time()
+        v = float(ser.readline().decode('utf-8'))
+        endTimer = time.time()
         x = np.dot(A, x) + v * B
-        y.append(np.dot(C, x).item(0)) # dodać wykres sterowania
+        y.append(np.dot(C, x).item(0))
+        u.append(v)
+        timer.append(endTimer - startTimer)
 
-plt.plot(y, 'ro'), plt.ylabel('y'), plt.xlabel('i')
-plt.show()
+_, fig = plt.subplots(2, 1, figsize=(6.4, 9.6))
+fig[0].set_title('Wartość wyjścia obiektu w zależności od chwili czasu')
+fig[0].plot(y, 'ro'), fig[0].set_ylabel('y'), fig[0].set_xlabel('i')
+fig[1].set_title('Wartość sterowania w zależności od chwili czasu')
+fig[1].plot(u, 'bo'), fig[1].set_ylabel('u'), fig[1].set_xlabel('i')
+plt.savefig(r'{0}\plots\horizons_{1}.png'.format(projectPath, systemParameters['horizons']), format='png', bbox_inches='tight')
 print(y[-1])
+
+with open('log.txt', 'a') as logger:
+    logger.write(systemParametersToSend)
+    logger.write('Init time, Mean of timestamps, Stdev of timestamps, Max of timestamps\n')
+    logger.write(f"{initTimer:.4} {statistics.mean(timer):.4} {statistics.stdev(timer):.4} {max(timer):.4}\n")
