@@ -44,5 +44,3 @@ void Utils::DataParser::ParseReceivedMsg(const std::string& msg) {
 void Utils::DataParser::ClearStorage() {
     storage.clear();
 }
-
-

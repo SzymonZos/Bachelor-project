@@ -5,9 +5,161 @@ Przydałby się rysunek z przepływem informacji + jak działa STM w połączeni
 
 \subsection{Obiektowość} \label{sec:objects}
 C++, singleton, hermetyzacja danych, clean code
+\begin{listing}[htb]
+\begin{minted}{cpp}
+#ifndef MPC_STM_DATAPARSER_HPP
+#define MPC_STM_DATAPARSER_HPP
+
+#include <map>
+#include <vector>
+#include <string>
+
+namespace Utils {
+    class DataParser {
+    public:
+        static bool isNewDataGoingToBeSend;
+
+        DataParser() = default;
+        ~DataParser() = default;
+        void ParseReceivedMsg(const std::string& msg);
+
+        [[nodiscard]] std::map<std::string, std::vector<double>> GetStorage() const;
+        void ClearStorage();
+
+    private:
+        constexpr static const char* regexPattern = R"(([[:alpha:]]+)(': )(\[.+?\]))";
+        std::map<std::string, std::vector<double>> storage;
+    };
+}
+
+#endif //MPC_STM_DATAPARSER_HPP
+
+\end{minted}
+\caption{DataParser.hpp: Przykładowy plik nagłówkowy}
+\label{lst:header_example`}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}{cpp}
+#include "utils/DataParser.hpp"
+#include "utils/Misc.hpp"
+#include <regex>
+#include <algorithm>
+
+
+bool Utils::DataParser::isNewDataGoingToBeSend = false;
+
+
+std::map<std::string, std::vector<double>> Utils::DataParser::GetStorage() const {
+    return storage;
+}
+
+
+void Utils::DataParser::ParseReceivedMsg(const std::string& msg) {
+    std::string valuesMatch;
+    std::regex pattern(regexPattern);
+    std::smatch fullMatch;
+    std::string::const_iterator iterator(msg.cbegin());
+
+    while (std::regex_search(iterator, msg.cend(), fullMatch, pattern)) {
+        valuesMatch = fullMatch[3].str();
+        std::replace(valuesMatch.begin(), valuesMatch.end(), ',', ' ');
+        valuesMatch.pop_back(); // trim ]
+        valuesMatch.erase(0, 1); // trim [
+        if (fullMatch[1].str().find('A') != std::string::npos) {
+            Utils::Misc::StringToDouble(valuesMatch, storage["A"]);
+        } else if (fullMatch[1].str().find('B') != std::string::npos) {
+            Utils::Misc::StringToDouble(valuesMatch, storage["B"]);
+        } else if (fullMatch[1].str().find('C') != std::string::npos) {
+            Utils::Misc::StringToDouble(valuesMatch, storage["C"]);
+        } else if (fullMatch[1].str().find("set") != std::string::npos) {
+            Utils::Misc::StringToDouble(valuesMatch, storage["set"]);
+        } else if (fullMatch[1].str().find("control") != std::string::npos) {
+            Utils::Misc::StringToDouble(valuesMatch, storage["control"]);
+        } else if (fullMatch[1].str().find("horizon") != std::string::npos) {
+            Utils::Misc::StringToDouble(valuesMatch, storage["horizons"]);
+        }
+        iterator = fullMatch.suffix().first;
+    }
+}
+
+
+void Utils::DataParser::ClearStorage() {
+    storage.clear();
+}
+
+\end{minted}
+\caption{DataParser.cpp: Przykładowy plik źródłowy}
+\label{lst:source_example`}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}{cpp}
+namespace HAL {
+    class Peripherals {
+    public:
+        Peripherals(const Peripherals&) = delete;
+        Peripherals& operator=(const Peripherals&) = delete;
+        Peripherals(Peripherals&&) = delete;
+        Peripherals& operator=(Peripherals&&) = delete;
+
+        static Peripherals& GetInstance();
+    };
+}
+\end{minted}
+\caption{Peripherals.hpp: Wzorzec projektowy - singleton}
+\label{lst:singleton_hpp`}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}{cpp}
+HAL::Peripherals& HAL::Peripherals::GetInstance() {
+    static Peripherals instance;
+    return instance;
+}
+\end{minted}
+\caption{Peripherals.cpp: Wzorzec projektowy - singleton}
+\label{lst:singleton_cpp}
+\end{listing}
 
 \subsection{Komunikacja} \label{sec:uart}
 Ramka, schemat, itp
+\begin{listing}[htb]
+\begin{minted}{cpp}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    if(GPIO_Pin == B1_Pin) {
+        HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+        Utils::DataParser::isNewDataGoingToBeSend = true;
+    }
+}
+\end{minted}
+\caption{Peripherals.cpp: Implementacja wywołania zwrotnego (callback) podczas przerwania}
+\label{lst:callback_cpp}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}{cpp}
+    void HAL::Peripherals::SendString(const uint8_t* string, uint16_t timeout) {
+        HAL_UART_Transmit(&handleUART, const_cast<uint8_t*>(string),
+                          std::strlen(reinterpret_cast<const char*>(string)), timeout);
+    }
+    \end{minted}
+    \caption{Peripherals.cpp: Implementacja wysyłania danych z platformy STM do PC}
+    \label{lst:sendstring_cpp}
+\end{listing}
+
+\begin{listing}[htb]
+\begin{minted}{cpp}
+void HAL::Peripherals::ReceiveString(const uint8_t* string, uint16_t timeout) {
+    uint8_t bufSize = 0;
+    HAL_UART_Receive(&handleUART, &bufSize, 1, timeout);
+    HAL_UART_Receive(&handleUART, const_cast<uint8_t*>(string), bufSize, 100);
+}
+\end{minted}
+\caption{Peripherals.cpp: Implementacja odbierania danych przez platformę STM}
+\label{lst:sendstring_cpp}
+\end{listing}
+
 
 \subsection{Aglorytm} \label{sec:algorithm}
 Jak zostało zrealizowane założenie

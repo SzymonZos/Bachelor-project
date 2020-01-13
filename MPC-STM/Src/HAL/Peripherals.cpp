@@ -58,7 +58,8 @@ void HAL::Peripherals::Init() {
 
 
 void HAL::Peripherals::SendString(const uint8_t* string, uint16_t timeout) {
-    HAL_UART_Transmit(&handleUART, const_cast<uint8_t*>(string), std::strlen(reinterpret_cast<const char*>(string)), timeout);
+    HAL_UART_Transmit(&handleUART, const_cast<uint8_t*>(string),
+                      std::strlen(reinterpret_cast<const char*>(string)), timeout);
 }
 
 

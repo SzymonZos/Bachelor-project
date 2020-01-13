@@ -40,13 +40,19 @@ narzędzia, które w sposób efektywny są kompilowane do kodu maszynowego. Taki
 wydajność do programów napisanych jedynie za pomocą asemblera. Jest to powiązane ze względną
 niskopoziomowością języka C, która zrealizowana została m.in. za pomocą ręcznej alokacji
 dynamicznej pamięci, a także minimalnego wspracia w czasie wykonywania programu. 
- 
+Pomimo swoich niewątpliwych zalet istnieją także wady zastosowania tylko i wyłącznie tego
+języka. Przykładem niewłaściwych a dopuszczalnych praktyk programistycznych w języku C są
+możliwość wywołania niezadeklarowanej funkcji, czy też przyjmowanie przez funkcje zadeklarowane
+bez żadnego argumentu dowolnej ilości parametrów. Ponadto legalną operacją jest inicjalizacja
+tablicy literałem łańcuchowym składającym się z większej ilości elementów niż jest przeznaczonej
+pamięci dla tej zmiennej.
+
 C++ jest to wieloparadygmatowy, statycznie typowany, kompilowalny język programowania zapewniający
 znacznie wyższy poziom abstrakcji w porównaniu do języka C. Na potrzeby pracy inżynierskiej
 wykorzystano najnowszy, w pełni dostępny, standard tego języka - C++17. 
 Wspomniana abstrakcja danych została
 zrealizowana za pomocą zastosowania paradygmatu programowania obiektowego. Zastosowanie interfejsów
-i "schowanie" implementacji programu umożliwia lepsze przeprowadzenie testów jednostkowych, a także
+i 'schowanie' implementacji programu umożliwia lepsze przeprowadzenie testów jednostkowych, a także
 budowę wieloplatformowych aplikacji. Podejście obiektowe umożliwia ponadto zaprowadzenie znacznie
 większego porządku w projektowaniu danego rozwiązania. Jednakże największym atutem takiego 
 rozwiązania jest hermetyzacja danych, która zapobiega wprowadzeniu innych wartości do zmiennych
@@ -61,28 +67,77 @@ wbudowanych ze względu na fragmentację niewielkiej ilości dostępnej pamięci
 jej alokacji i dealokacji. Ponadto STL zawiera operacje rzucające wcześniej wymienione wyjątki. 
 
 \subsection{Język programowania Python} \label{sec:python}
-Wysokopoziomowe ułatwienie testowania z PC.
+Python jest to interpretowany, interaktywny, zoorientowany obiketowo język programowania.
+Zawiera on moduły, wyjątki, dynamiczne typowanie, wysokopoziomowe typy danych i klasy.
+Python łączy w sobie godną uwagi moc z bardzo czystą składnią. Posiada on interfejs do bardzo
+dużej ilości biblioteki i wywołań systemowych. Dodatkowo jest możliwe jego rozszerzenie o własne
+biblioteki w C albo C++. Python jest także wykorzystywany jako dodatkowy język przy projektowaniu
+aplikacji, które potrzebują programowalnego interfejsu. Warta uwagi jest również przenośność
+tego języka pomiędzy popularnymi systemami operacyjnymi takimi jak Linux, Mac, czy też Windows.
+
+W projekcie inżynierkism skorzystano z kilku wysokopoziomowych bibliotek dostępnych
+w Pythonie. Do komunikacji z platformą STM została wykorzystana biblioteka \textit{Serial}, która
+zawiera odpowiednią implementację wysyłania i odbierania danych za pośrednictwem portu szeregowego.
+Przydatna okazała się także biblioteka \textit{NumPy} oferująca klasy macierzy, a także wydajne
+obliczenia numeryczne. Zastosowanie znalazła także biblioteka \textit{Pyplot}, która jest
+zaopatrzona w funkcje pozwalające graficznie zaprezentować wyniki działania programu. Działanie
+dwóch ostatnich bibliotek jest bardzo zbliżone do analogicznych funkcji środowiska MATLAB.
 
 \subsection{Środowisko MATLAB} \label{sec:matlab}
-Sprawdzone środowisko do obliczeń macierzowych i układów dynamicznych.
+MATLAB (matrix laboratory) jest to wieloparadygmatowe i zamknięte środowisko służące do wykonywania 
+obliczeń numerycznych rozwijane przez firmę Mathworks. MATLAB pozwala na bardzo wygodne dla użytkownika
+operacje na macierzach, graficzną reprezentację danych w formie wykresów, implementację dużej liczby
+algorytmów, a także możliwość stworzenia interfejsu użytkownika. Jednym z pakietów tego środowiska 
+jest \textit{Simulink} - graficzne środowisko programistyczne przeznaczone do modelowania, analizy
+oraz symulacji systemów dynamicznych. Rozszerzenie to oferuje integrację z resztą modułów MATLABa,
+co znacznie upraszcza proces tworzenia modelu. Podstawą funkcjonalności pakietu \textit{Simulink}
+są programowalne bloki, które zawierają odpowiednie wywołania funkcji numerycznych. Biblioteka ta
+znalazła szerokie zastosowanie w automatyce i cyfrowym przetwarzaniu sygnałów.
 
-\subsection{Cube} \label{sec:cube}
-Generator kodu do biblioteki HAL.
-
-\subsection{Biblioteka HAL} \label{sec:hal}
-W miarę wysokopziomowe rozwiązanie jak na standardy mikroprocków, jednak zostały napotkane problemy.
+\subsection{STM32CubeMX} \label{sec:cube}
+STM32CubeMX jest to graficzne narzędzie umożliwiające prostą konfigurację mikrokontrolerów oraz
+mikroprocesorów z rodziny STM32. Program ten jest w stanie wygenerować adekwatny system plików
+zawierających kod w C przeznaczony do użycia dla rodziny rdzeni Arm Cortex-M. Biblioteka, z której
+wywołań korzysta wygenerowany kod ma formę warstwy abstrakcji sprzętowej (HAL). Takie rozwiązanie
+umożliwia pominięcie operacji na rejestrach procesora w trakcie tworzenia aplikacji przez użytkownika.
 
 \subsection{CMake} \label{sec:cmake}
-Cross platform make, możliwość kompilacji z różnych systemów operacyjnych.
+CMake jest to otwartoźródłowa, wieloplatformowa rodzina narzędzi przeznaczonych do budowania oraz
+testowania oprogramowania. CMake jest używany do kontrolowania kompilacji kodów źródłowych, używając
+prostych, niezależnych od platformy i kompilatora plików konfiguracyjnych. Program ten generuje
+natywne pliki Makefile, a także przestrzenie robocze, które mogą być użyte w dowolnym zintegrowanym
+środowisku programistycznym. 
 
 \subsection{Kompilator i linker} \label{sec:gcc}
-arm none eabi gcc, coś o opensource
+Do kompilacji i linkowania wykorzystano zestaw narzędzi programistycznych GNU przeznaczony dla
+systemów wbudowanych opartych o architekturę Arm (The GNU Embedded Toolchain Arm), w którego
+skład wchodzą m.in. kompilator języka C - arm-none-eabi-gcc, kompilator języka C++
+- arm-none-eabi-g++, a także linker - ld. Zdecydowano się na ten zestaw narzędzi ze względu na 
+otwartoźródłowość tego projektu.
 
 \subsection{Regex} \label{sec:regex}
-Krótko o wyrażeniach regularnych.
+Wyrażenia regularne (regex) są to sekwencje znaków, które definiują wzór wyszukiwania. Regex został
+rozwinięty jako technika zarówno w teoretycznej informatyce, jak i w teorii języków formalnych.
+Z reguły wyrażenia regularne są wykorzystywane w operacjach 'znajdź' lub 'znajdź i zamień', które
+zdefiniowane są na łańcuchach znakowych. Innym zastosowaniem ich jest weryfikacja poprawności podanych
+danych na wejściu. Istnieją dwie wiodące składnie do zapisu wyrażeń regularnych: pierwsza z nich
+wchodzi w skład standardu POSIX, a druga jest wzorowana na oryginalnej implementacji języka Perl. 
 
 \section{Przykład referencyjny} \label{sec:ref}
-Ten z simulinka + testowanie w matlabie.
+Do oceny poprawności implementacji rozwiązania wykorzystano 2 przykłady referencyjne, które zostały
+przygotowane w \ref{sec:matlab} środowisku MATLAB. Jeden z nich posłużył jako zapoznanie się ze
+sposobem regulacji MPC. Został on wykonany w środowisku \textit{Simulink}. 
+%Tu potrzebne zdjęcia razem z opisem.
+Do weryfikacji poprawności obliczeń przeprowadzonych na platformie STM zaimplementowano analogiczny
+alogrytm jako skrypt środowiska MATLAB.  
 
 \section{Sposób testowania} \label{sec:tests}
+Testy zostały przeprowadzone jako symulacja Hardware-in-the-loop.
+Hardware-in-the-loop (HIL) simulation, or HWIL, is a technique that is used in the development
+and test of complex real-time embedded systems. HIL simulation provides an effective platform 
+by adding the complexity of the plant under control to the test platform. The complexity
+of the plant under control is included in test and development by adding a mathematical
+representation of all related dynamic systems. These mathematical representations are referred
+to as the “plant simulation”. The embedded system to be tested interacts with this plant simulation.
 Skrypt w Pythonie + HIL
+
