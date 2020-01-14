@@ -8,12 +8,12 @@ import statistics
 
 projectPath = os.path.dirname(os.path.abspath(__file__))
 changeParameters = True
-systemParameters = {'A': [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1],
-                    'B': [0, 0, 1, 0],
+systemParameters = {'A': [-1, 0.2, 1, -0.2, 0, 0.5, 0.1, 1, 0, 0, 1, 0, 0, 0, 0, 1],
+                    'B': [0, 0, 1, 1],
                     'C': [1, 1, 0, 0],
-                    'setPoint': [10],
-                    'controlExtremeValues': [-10, 10],
-                    'horizons': [30, 8]}
+                    'setPoint': [100],
+                    'controlExtremeValues': [-0.25, 0.25],
+                    'horizons': [15, 3]}
 systemParametersToSend = str(systemParameters)[1:-1] + '\n\0'
 A = np.array(systemParameters['A']).\
     reshape(-1, int(np.sqrt(len(systemParameters['A']))))
@@ -52,12 +52,13 @@ fig[0].set_title('Wartość wyjścia obiektu w zależności od chwili czasu')
 fig[0].plot(y, 'ro'), fig[0].set_ylabel('y'), fig[0].set_xlabel('i')
 fig[1].set_title('Wartość sterowania w zależności od chwili czasu')
 fig[1].plot(u, 'bo'), fig[1].set_ylabel('u'), fig[1].set_xlabel('i')
-plt.savefig(r'{0}\plots\horizons_{1}.png'.format
-            (projectPath, systemParameters['horizons']), format='png', bbox_inches='tight')
+plt.show()
+#plt.savefig(r'{0}\plots\A_{1}.png'.format
+#            (projectPath, systemParameters['A']), format='png', bbox_inches='tight')
 print(y[-1])
 
 with open('log.txt', 'a') as logger:
-    logger.write(str(systemParameters['A']))
+    logger.write(str(systemParameters['A']) + '\n')
     logger.write('Init time, Mean of timestamps,'
                  ' Stdev of timestamps, Max of timestamps\n')
     logger.write(f"{initTimer:.4} {statistics.mean(timer):.4}"
