@@ -1,10 +1,18 @@
 \section{Założenia projektowe} \label{sec:assumptions}
+Jak pokazano w rozdziale \ref{ch:idea} sterowanie predykcyjne jest bardzo złożonym procesem.
+Postanowiono więc przyjąć pewne obostrzenia ułatawiające skupienie się na samym sposobie regulacji, 
+wpływie parametrów regulatora oraz obiektu na poprawność działania danego układu regulacji. W tym
+celu przyjęto następujące założenie projektowe - model matematyczny badanego układu jest znany, a
+także stały w czasie wykonywania się algorytmu. Ponadto obiekt ten jest dyskretnym układem liniowym.
+Założenie to pozwoliło na eliminację konieczności przeprowadzenia identyfikacji modelu. Do
+implementacji algorytmu MPC wykorzystano szybką metodę gradientową oraz ograniczono się do skalarnej
+wersji regulatora.
+Podczas oceny poprawności przeprowadzonej symulacji posłużono się następującymi kryteriami:  
 \begin{itemize}
-	\item Układ liniowy, dyskretny
-	\item Odpowiedź MCU w czasie rzeczywistym
-    \item Poprawność wyliczonych wartości
-    \item Opisany przypadek MPC do implementacji -> fast gradient method
-    \item Szczególny przypadek regulatora MPC
+	\item Odpowiedź mikrokontrolera w czasie rzeczywistym.
+    \item Poprawność wyznaczonych sterowań.
+    \item Poprawność otrzymanej wartości wyjściowej.
+    \item Uzyskanie wartości zadanej w skończonym czasie.
 \end{itemize}
 
 \section{Architektura systemu} \label{sec:system}
@@ -13,7 +21,23 @@
 ARM (Advanced RISC Machine) jest to rodzina architektur procesorów typu RISC (Reduced Instruction
 Set Computing). Charakteryzuje się zmniejszoną liczbą instrukcji w porównaniu do CISC, co
 przekłada się na mniejsze zużycie energii. Wynika z tego zastosowanie architektury ARM
-w systemach wbudowanych. %więcej dopisać
+w systemach wbudowanych. Dla każdego mikroprocesora 
+
+Control Unit
+For any microprocessor, control unit is the heart of the whole process and it is responsible 
+for the system operation,so the control unit design is the most important part within the whole
+ design. The control unit is sometimes a pure combinational circuit design. Here, the control
+  unit is implemented by easy state machine. The processor timing is additionally included within
+   the control unit. Signals from the control unit are connected to each component within the 
+   processor to supervise its operation.
+
+Arithmetic Logic Unit (ALU)
+The ALU has two 32-bits inputs. The primary comes from the register file, whereas the other
+ comes from the shifter. Status registers flags modified by the ALU outputs. The V-bit output
+  goes to the V flag as well as the Count goes to the C flag. Whereas the foremost significant
+   bit really  represents  the S  flag,  the  ALU  output  operation is  done by NORed to  get 
+    the  Z  flag. The ALU has a 4-bit function bus that permits up to 16 opcode to be implemented.
+
 
 \subsection{Platforma STM} \label{sec:stm}
 STM32 jest to rodzina 32 bitowych mikrokontrolerów produkowana przez STMicroelectronics.
@@ -132,7 +156,12 @@ Do weryfikacji poprawności obliczeń przeprowadzonych na platformie STM zaimple
 alogrytm jako skrypt środowiska MATLAB.  
 
 \section{Sposób testowania} \label{sec:tests}
-Testy zostały przeprowadzone jako symulacja Hardware-in-the-loop.
+Testy zostały przeprowadzone jako symulacja Hardware in the loop (HIL). Jest to technika używana
+do rozwoju i testowania złożonych wbudowanych systemów czasu rzeczywistego. Symulacja HIL zapewnia
+efektywne możliwości przeprowadzenia testów danej platformy poprzez przekazanie kontroli nad 
+modelem matematycznym tejże platformie. Właściwości sterowanego modelu są włączane do próby testowej
+poprzez dodanie adekwatnego modelu matematycznego reprezentującego opisywany układ dynamiczny. 
+
 Hardware-in-the-loop (HIL) simulation, or HWIL, is a technique that is used in the development
 and test of complex real-time embedded systems. HIL simulation provides an effective platform 
 by adding the complexity of the plant under control to the test platform. The complexity
