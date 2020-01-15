@@ -21,15 +21,15 @@ Podczas oceny poprawności przeprowadzonej symulacji posłużono się następuj�
 ARM (Advanced RISC Machine) jest to rodzina architektur procesorów typu RISC (Reduced Instruction
 Set Computing). Charakteryzuje się zmniejszoną liczbą instrukcji w porównaniu do CISC, co
 przekłada się na mniejsze zużycie energii. Wynika z tego zastosowanie architektury ARM
-w systemach wbudowanych. Dla każdego mikroprocesora 
+w systemach wbudowanych. Dla każdego mikroprocesora jednostka sterująca (CU) jest sercem całego
+urządzenia. CU jest odpowiedzialne za operacje systemowe. Z tego powodu zaprojektowanie jednostki
+sterującej jest najważniejszą częścią w tworzeniu nowego schematu mikrokontrolera. W przypadku
+architektury ARM CU jest zaimplementowany za pomocą maszyny stanów. Dodatkowo sygnały z jednostki
+sterującej są połączone z każdym podzespołem procesora, aby zapewnić kontrolę jego operacji.
+Jednostka arytmetyczno-logiczna (ALU) jest kolejną istotną częścią mikrokontrolera. Jej zadaniem
+jest prowadzenie obliczeń na liczbach całkowitych. W przypadku architektury ARM ALU posiada dwa
+32 bitowe wejścia.  
 
-Control Unit
-For any microprocessor, control unit is the heart of the whole process and it is responsible 
-for the system operation,so the control unit design is the most important part within the whole
- design. The control unit is sometimes a pure combinational circuit design. Here, the control
-  unit is implemented by easy state machine. The processor timing is additionally included within
-   the control unit. Signals from the control unit are connected to each component within the 
-   processor to supervise its operation.
 
 Arithmetic Logic Unit (ALU)
 The ALU has two 32-bits inputs. The primary comes from the register file, whereas the other
@@ -161,12 +161,6 @@ do rozwoju i testowania złożonych wbudowanych systemów czasu rzeczywistego. S
 efektywne możliwości przeprowadzenia testów danej platformy poprzez przekazanie kontroli nad 
 modelem matematycznym tejże platformie. Właściwości sterowanego modelu są włączane do próby testowej
 poprzez dodanie adekwatnego modelu matematycznego reprezentującego opisywany układ dynamiczny. 
-
-Hardware-in-the-loop (HIL) simulation, or HWIL, is a technique that is used in the development
-and test of complex real-time embedded systems. HIL simulation provides an effective platform 
-by adding the complexity of the plant under control to the test platform. The complexity
-of the plant under control is included in test and development by adding a mathematical
-representation of all related dynamic systems. These mathematical representations are referred
-to as the “plant simulation”. The embedded system to be tested interacts with this plant simulation.
-Skrypt w Pythonie + HIL
+Implementacja symulacji HIL została wykonana w języku programowania Python ze względu na łatwą
+zdolność integracji różnych bibliotek, co pokazno w rozdziale \ref{sec:python}. 
 

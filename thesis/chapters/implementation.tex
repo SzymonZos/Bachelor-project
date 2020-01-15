@@ -2,9 +2,25 @@
 Przydałby się rysunek z przepływem informacji + jak działa STM w połączeniu z PC.
 
 \section{Szczegóły implementacji - STM} \label{sec:details-stm}
+Zdecydowano się na implementację części programowej w języku C++, zważywszy na jego benefity
+omówione w rozdziale \ref{sec:cpp}. W kolejnych podrozdziałach zaprezentowano szczegóły
+zaprogramowanego rozwiązania problemu. Omówiono także na przykładach zastosowane praktyki
+programistyczne wraz z możliwością ich rozwoju oraz usprawnienia działania. 
 
-\subsection{Obiektowość} \label{sec:objects}
+\subsection{Charakterystyczne cechy C++} \label{sec:cpp_details}
 C++, singleton, hermetyzacja danych, clean code
+W projekcie wykorzystano paradygmat programowania obiektowego ze względu na uproszczenie zarządzania
+dostępem do danych przez konkretne funkcje, a także w celu uporządkowania konkretnych rozwiązań.
+Dodatkowo takie podejście w łatwy sposób można rozszerzyć o nowe funkcjonalności. Nieodłącznym 
+aspektem programistycznym są testy jednostkowe, ponieważ pozwalają one na wczesne wykrycie błędów
+danego oprogramowania. Implementacja obiektowości znacznie ułatwia testowanie kodu napisanego w C++.
+W tym celu można posłużyć się np. otwartoźródłową biblioteką Googletest. Na listingu
+\ref{lst:header_example} zaprezentowano przykładowy plik nagłówkowy jednej z klas użytych w
+implementacji rozwiązania. Podziałem na pola i metody publiczne oraz prywatne zrealizowano
+postulat hermetyzacji danych. Do pola \textit{storage} spoza klasy można odwołać się tylko poprzez
+adekwatną metodę \textit{Get}. Dzięki takiemu rozwiązaniu uniknięto niepożądanych zmian zawartości
+tego pola poprzez metody nienależące do klasy \textit{DataParser}. Dodatkową organizację i porządek
+w zrealizowanym projekcie zapewniło użycie przestrzeni nazw (namespace). 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 #ifndef MPC_STM_DATAPARSER_HPP
@@ -39,8 +55,18 @@ namespace Utils {
 #endif //MPC_STM_DATAPARSER_HPP
 \end{minted}
 \caption{DataParser.hpp: Przykładowy plik nagłówkowy}
-\label{lst:header_example`}
+\label{lst:header_example}
 \end{listing}
+
+Na listingu \ref{lst:source_example} przedstawiono plik źródłowy korespondujący z plikiem
+nagłówkowym klasy \textit{DataParser}. Rozdzielenie deklaracji i definicji pól oraz metod umożliwia
+odwołanie się do tych publicznych poza zakresem danej klasy poprzez włączenie odpowiedniego 
+pliku nagłówkowego. W celu zapewnienia bardziej elastycznego sposobu identyfikacji odebranych
+danych posłużono się omówionymi w rozdziale \ref{sec:regex} wyrażeniami regularnymi. Zastosowanie
+wyszukiwania kluczowych wartości w przeprowadzaniu analizy odebranej wiadomości umożliwia
+przyszłą modyfikację tychże komunikatów. Aby uprościć implementację biblioteki \textit{<regex>},
+zdecydowano się na wykorzystanie STLa. Stało się to możliwe dzięki pokaźnemu, jak na systemy
+wbudowane, rozmiarowi pamięci flash platformy Nucleo. 
 
 \begin{listing}[htb]
 \centering
@@ -86,7 +112,7 @@ void Utils::DataParser::ClearStorage() {
 }
 \end{minted}
 \caption{DataParser.cpp: Przykładowy plik źródłowy}
-\label{lst:source_example`}
+\label{lst:source_example}
 \end{listing}
 
 \begin{listing}[htb]
