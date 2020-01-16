@@ -8,7 +8,6 @@ zaprogramowanego rozwiązania problemu. Omówiono także na przykładach zastoso
 programistyczne wraz z możliwością ich rozwoju oraz usprawnienia działania. 
 
 \subsection{Charakterystyczne cechy C++} \label{sec:cpp_details}
-C++, singleton, hermetyzacja danych, clean code
 W projekcie wykorzystano paradygmat programowania obiektowego ze względu na uproszczenie zarządzania
 dostępem do danych przez konkretne funkcje, a także w celu uporządkowania konkretnych rozwiązań.
 Dodatkowo takie podejście w łatwy sposób można rozszerzyć o nowe funkcjonalności. Nieodłącznym 
@@ -66,9 +65,9 @@ danych posłużono się omówionymi w rozdziale \ref{sec:regex} wyrażeniami reg
 wyszukiwania kluczowych wartości w przeprowadzaniu analizy odebranej wiadomości umożliwia
 przyszłą modyfikację tychże komunikatów. Aby uprościć implementację biblioteki \textit{<regex>},
 zdecydowano się na wykorzystanie STLa. Stało się to możliwe dzięki pokaźnemu, jak na systemy
-wbudowane, rozmiarowi pamięci flash platformy Nucleo. 
+wbudowane, rozmiarowi pamięci flash platformy Nucleo. Całość została zrealizowana jako maszyna stanów.
 
-\begin{listing}[htb]
+\begin{listing}[p]
 \centering
 \begin{minted}[linenos, breaklines]{cpp}
 #include ...
@@ -115,6 +114,16 @@ void Utils::DataParser::ClearStorage() {
 \label{lst:source_example}
 \end{listing}
 
+W celu lepszego dostosowania aplikacji do standardu języka C++ postanowiono zastosować jeden z wzorców
+projektowych, a mianowicie Singleton. Przykład implementacji pokazano na listingach \ref{lst:singleton_hpp}
+oraz \ref{lst:singleton_cpp}. Zdecydowano się na statyczną wersję tego wzorca ze względu na bezpieczeństwo
+w poprawnym funkcjonowaniu procesów. Rozwiązanie proponowane za pośrednictwem gotowego przykładu użycia
+interferjsu biblioteki HAL jest bardzo niebezpieczne z punktu widzenia dostępu do danych. Mianowicie, po
+inicjalizacji urządzeń peryferyjnych korzysta się w owym przykładzie z jednej struktury, która jest zmienną
+globalną. Przykład ten pokazuje, że rozwiązania tej konkretnej biblioteki nie należą do optymalnych.
+Z tego powodu postanowiono stworzyć osobną klasę, która powinna być inicjalizowana tylko raz. W takim
+rozwiązaniu problemu Singleton jest dobrym pomysłem na poprawę jakości kodu.
+
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 namespace HAL {
@@ -130,7 +139,7 @@ namespace HAL {
 }
 \end{minted}
 \caption{Peripherals.hpp: Wzorzec projektowy - singleton}
-\label{lst:singleton_hpp`}
+\label{lst:singleton_hpp}
 \end{listing}
 
 \begin{listing}[htb]
@@ -145,7 +154,14 @@ HAL::Peripherals& HAL::Peripherals::GetInstance() {
 \end{listing}
 
 \subsection{Komunikacja} \label{sec:uart}
-Ramka, schemat, itp
+W implementacji komunikacji po stronie platformy STM wykorzystano uniwersalny asynchroniczny
+nadajnik-odbiornik (UART). Jest to układ scalony, który wykorzystuje się w celu odbierania i przesyłania
+informacji poprzez port szeregowy. W tym celu wykorzystano gotowe, wysokopoziomowe rozwiązania
+biblioteki HAL. Aby możliwe było wysłanie nowych parametrów regulatora oraz układu wykorzystano wspomniany
+w rozdziale \ref{sec:stm} programowalny przycisk dostępny dla użytkownika. Postanowiono zastosować do tego
+celu jedno z systemowych przerwań wraz z wywołaniem zwrotnym widocznym na listingu \ref{lst:callback_cpp}.
+Taki sposób rozwiązania problemu pozwolił na wyeliminowanie zjawiska odpytywania (pollingu). W oczekiwaniu
+na interakcję użytkownika, procesor systematycznie nie sprawdza danego rejestru.
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {

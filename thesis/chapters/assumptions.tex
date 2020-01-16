@@ -30,15 +30,6 @@ Jednostka arytmetyczno-logiczna (ALU) jest kolejną istotną częścią mikrokon
 jest prowadzenie obliczeń na liczbach całkowitych. W przypadku architektury ARM ALU posiada dwa
 32 bitowe wejścia.  
 
-
-Arithmetic Logic Unit (ALU)
-The ALU has two 32-bits inputs. The primary comes from the register file, whereas the other
- comes from the shifter. Status registers flags modified by the ALU outputs. The V-bit output
-  goes to the V flag as well as the Count goes to the C flag. Whereas the foremost significant
-   bit really  represents  the S  flag,  the  ALU  output  operation is  done by NORed to  get 
-    the  Z  flag. The ALU has a 4-bit function bus that permits up to 16 opcode to be implemented.
-
-
 \subsection{Platforma STM} \label{sec:stm}
 STM32 jest to rodzina 32 bitowych mikrokontrolerów produkowana przez STMicroelectronics.
 Kontrolery są podzielone na odpowiednie serie, jednak łączy je bazowanie na 32 bitowym
@@ -54,6 +45,44 @@ doświadczonym jak i początkującym, użytkownikom. Moduł ten łączy w sobie 
 aspektów wydajności oraz zużycia energii. W porównaniu do konkurencyjnych platform oferuje
 znacznie mniejsze zużycie energii podczas pracy z zasilaczem impulsowym.
 Poniżej zamieszczono pełną specyfikację.
+\begin{itemize}
+	\item Mikrokontroler: STM32F401RET6
+    \begin{itemize}[label=$\star$]
+        \item Rdzeń: ARM Cortex M4 32-bit
+        \item Częstotliwość taktowania: 84 MHz
+        \item Pamięć programu Flash: 512 kB
+        \item Pamięć SRAM: 96 kB
+        \item Przetwornik analogowo-cyfrowy: 12-bitowy, 10-kanałowy
+        \item Ilość Timerów: 10
+        \item Ilość programowalnych wejść/wyjść: 81
+        \item Interfejsy: 3x I2C, 3x USART, 4x SPI, USB 2.0 Full Speed
+    \end{itemize}
+	\item Dwa typy złącz:
+    \begin{itemize}[label=$\star$]
+	    \item Złącza dla nakładek kompatybilnych z Arduino Uno Rev3
+        \item Standardowe piny STMicroelectronics Morpho, umożliwiające dostęp do wyprowadzeń mikrokontrolera
+    \end{itemize}
+    \item Moduł zgodny z systemem mbed (mbed.org)
+    \item Debugger ST-Link/V2 umieszczony na płytce z możliwością pracy jako oddzielne urządzenie z wyjściem SWD
+    \item Możliwość zasilania poprzez złącze USB
+    \item Wbudowane trzy diody LED:
+    \begin{itemize}[label=$\star$]
+        \item 1 x sygnalizująca napięcia zasilania
+        \item 1 x sygnalizująca komunikację
+        \item 1 x do dyspozycji użytkownika
+    \end{itemize}
+    \item Dwa przyciski:
+    \begin{itemize}[label=$\star$]
+        \item 1 x RESET
+        \item 1 x do dospozycji użytkownika
+    \end{itemize}
+    \item Trzy różne interfejsy poprzez złącze miniUSB:
+    \begin{itemize}[label=$\star$]
+        \item Wirtualny port COM
+        \item Pamięć masowa
+        \item Port do programowania / debuggowania
+    \end{itemize}
+\end{itemize}
 
 \section{Narzędzia programistyczne} \label{sec:prog}
 
