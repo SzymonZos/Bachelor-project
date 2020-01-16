@@ -175,6 +175,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 \label{lst:callback_cpp}
 \end{listing}
 
+W przypadku implementacji funkcji stricte odpowiedzialnych za komunikację posłużono się wcześniej
+wspomnianym pollingiem. Skorzystanie z obsługi przerwań w tym przypadku nie było możliwe zważywszy na
+niewłaściwą interakcję między tym generowanym po wciśnięciu przecisku a tymi po wysłaniu czy też odebraniu
+wiadomości. Takie podejście prowadzi do nadmiernego zużycia zasobów procesora, jednakże umożliwiło ono 
+tymczasowe rozwiązanie napotkanego problemu. Zgodnie z przyjętym paradygmatem programowania obiektowego
+napisano metody opakowujące biblioteczne funkcje obsługujące UARTa. Wspomniane funkcjonalności
+zaprezentowano na listingach \ref{lst:sendstring_cpp} oraz \ref{lst:receivestring_cpp}. Implementacja
+wysyłania wiadomości okazała się prostolinijna w przeciwieństwie do odbioru wiadomości. Problemu
+przysporzył brak możliwości skutecznego nawiązania połączenia bez znajomości długości przychodzącego
+łańcucha znaków. Postanowiono więc wysyłać dwie wiadomości - pierwszą o z góry ustalonym rozmiarze
+1 bajta zawierającą informację o długości następnej. Takie ograniczenie poskutkowało zmniejszeniem
+maksymalnej pojemności wiadomości do 255 bajtów, co jest wystarczającą wielkością do użycia w celach
+projektowych. Istnieje możliwość zwiększenia tego limitu poprzez ustalenie innej liczby bajtów w pierwszej
+przychodzącej wiadomości. 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
     void HAL::Peripherals::SendString(const uint8_t* string, uint16_t timeout) {
@@ -195,7 +209,7 @@ void HAL::Peripherals::ReceiveString(const uint8_t* string, uint16_t timeout) {
 }
 \end{minted}
 \caption{Peripherals.cpp: Implementacja odbierania danych przez platformę STM}
-\label{lst:sendstring_cpp}
+\label{lst:receivestring_cpp}
 \end{listing}
 
 \subsection{Klasa macierzy} \label{sec:matrices}
