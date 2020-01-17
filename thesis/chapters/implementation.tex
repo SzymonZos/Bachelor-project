@@ -213,8 +213,23 @@ void HAL::Peripherals::ReceiveString(const uint8_t* string, uint16_t timeout) {
 \end{listing}
 
 \subsection{Klasa macierzy} \label{sec:matrices}
-
-\begin{listing}[htb]
+Implementacja algorytmu MPC wymaga dużej ilości operacji na macierzach. W standardowej bibliotece języka
+programowania C++ nie są dostępne żadne kontenery ułatawiające przeprowadzenie takich działań. Dostępne
+są wprawdzie gotowe rozwiązania w postaci zewnętrznych bibliotek, np. \textit{Eigen}. Jednakże nie
+zdecydowano się na włączenie żadnej z nich do projektu zważywszy na ograniczone zasoby platformy STM.
+Postanowiono więc zaimplementować własne rozwiązanie będące klasą opakowującą na dynamicznie alokowane
+tablice wskaźników. Na listingu \ref{lst:matrix_hpp} przedstawiono fragment pliku nagłówkowego omawianej
+solucji. Przedstawiono w nim najważniejsze metody będące niezbędne do poprawnego zaimplementowania 
+algorytmu sterowania predykcyjnego. Skorzystano także z możliwości przeciążenia operatorów, którą oferuje
+język C++. W ten sposób opakowano odpowiadające im metody i sprawiono, że używanie tych funkcjonalności
+jest bardziej przejrzyste dla użytkownika. Zaimplementowano także rekursywną metodę obliczania wyznacznika
+macierzy bazującą na rozwinięciu Laplace'a. Potrzebny okazał się także być algorytm odwracania macierzy.
+W tym celu posłużono się metodą polegającą na znalezieniu macierzy dopełnień algebraicznych. Pewną
+niedogodnością zaproponowanego rozwiązania jest użycie wyjątków, których obsługa jest domyślnie wyłączona
+w platformie STM. Ich negatywny wpływ na systemy wbudowane został omówiony w rozdziale \ref{sec:cpp}.
+Znalazły się one w projekcie, ponieważ ich zastosowanie znacznie ułatwiło debuggowanie testowej wersji
+algorytmu, która była sprawdzana na PC.  
+\begin{listing}[p]
 \begin{minted}[linenos, breaklines]{cpp}
 #include ...
 
@@ -266,6 +281,24 @@ public:
 \end{listing}
 
 \subsection{Aglorytm} \label{sec:algorithm}
+W celu realizacji sterowania predykcyjnego posłużono się szybką metodą gradientu prostego. %tu musi być ten przypis
+Do poprawnego funkcjonowania tej metody potrzebne są następujące dane.
+\begin{itemize}
+    \item Wektor stanów $x_k$.
+    \item Początkowa wartość $v_0$ (przyjęto 0).
+    \item Maksymalna liczba możliwych iteracji $i_{max}$.
+    \item Maksymalna wartość własna $L$ macierzy $H$, jak i minimalna $\mu$. 
+\end{itemize}
+Poniżej zamieszczono kolejne kroki tego algorytmu.
+\begin{enumerate}
+    \item Ustawienie stanu poczatkowego: $v_{old} = y$, $w = y$.
+    \item Obliczenie $v$ jako projekcji gradientowej z $w$ o kroku $1/L$.
+    \item Obliczenie $w = v + \frac{\sqrt{L} - \sqrt{\mu}}{\sqrt{L} + \sqrt{\mu}}(v - v_{old})$.
+    \item Ustawienie $v_{old} = v$.
+    \item Powtórzenie algorytmu do osiągnięcia warunku stopu albo maksymalnej liczby iteracji.
+    \item Zwrócenie otrzymanego sterowania $v$.  
+\end{enumerate}
+Na listingu \ref{lst:gradient_cpp} znajduje się implementacja szybkiej metody gradientowej.
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 double Control::MPC::FastGradientMethod(const std::string& msg) {
@@ -286,6 +319,41 @@ double Control::MPC::FastGradientMethod(const std::string& msg) {
 \caption{MPC.cpp: Implementacja szybkiej metody gradientowej}
 \label{lst:gradient_cpp}
 \end{listing}
+
+W celu obliczenia minimalnej i maksymalnej wartości własnej macierzy $H$ zastosowano iteracyjną
+metodę potęgową. Jej implementacja znajduje się na listingu \ref{lst:powermethod_cpp}. Algorytm
+ten umożliwia znalezienie maksymalnej, co do modułu, wartości własnej danej macierzy. Wartość
+minimalna może być obliczona poprzez znalezienie wartości maksymalnej macierzy odwrotnej. Metoda
+potęgowa została zastosowana ze względu na swoją prostotę, łatwość w implementacji oraz konieczność
+wyznaczcenia jedynie najbardziej skrajnych, co do modułu, wartości własnych danej macierzy. 
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{cpp}
+double Utils::Misc::PowerMethod(const CMatrix& matrix, uint32_t maxIterations) {
+    double greatest_eigenvalue_current = 0, greatest_eigenvalue_previous;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    CVector b_k(matrix.GetRows(), 1), b_k1(matrix.GetRows(), 1);
+
+    for (uint32_t i = 0; i < matrix.GetRows(); i++) {
+        b_k[i][0] = std::generate_canonical<double, 10>(gen);
+    }
+    for (uint32_t i = 0; i < maxIterations; i++) {
+        b_k1 = matrix * b_k;
+        b_k = b_k1 / std::sqrt((b_k1 * b_k1.T())[0][0]);
+        greatest_eigenvalue_previous = greatest_eigenvalue_current;
+        greatest_eigenvalue_current = ((matrix * b_k) * b_k.T())[0][0] / (b_k * b_k.T())[0][0];
+        if (std::fabs(greatest_eigenvalue_current - greatest_eigenvalue_previous) < 0.01) {
+            break;
+        }
+    }
+    return std::fabs(greatest_eigenvalue_current);
+}
+\end{minted}
+\caption{Misc.cpp: Implementacja metody potęgowej}
+\label{lst:powermethod_cpp}
+\end{listing}
+
+
 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
