@@ -420,6 +420,8 @@ void Control::MPC::InitializeParameters(std::map<std::string, std::vector<double
 \label{lst:parameters_cpp}
 \end{listing}
 
+W celu wyznaczenia wskazanych w rozdziale \ref{sec:qp} macierzy potrzebnych do rozwiązania
+problemu programowania kwadratowego zastosowano kod zaprezentowany na listingu \ref{lst:opt_cpp}.
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 void Control::MPC::CalculateOptimizationMatrices() {
@@ -527,5 +529,8 @@ with open('log.txt', 'a') as logger:
 \end{listing}
 
 \section{Problemy napotkane podczas realizacji} \label{sec:problems}
-HAL - przerwania, ramka UARTa
-Model układu - feasibility
+Podczas realizacji implementacji algorytmu MPC napotkano na kilka trudności, które wynikały
+głównie z ograniczeń biblioteki HAL. Problemy te opisano w poprzednich rozdziałach.
+W celu sprawnego testowania algorytmu podjęto decyzję, aby obliczenia na macierzach przeprowadzać
+na stercie. Rozwiązanie to znacznie ułatwiło pracę nad projektem, jednak obarczone było 
+sporą utratą wydajności. 
