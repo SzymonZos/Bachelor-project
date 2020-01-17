@@ -454,6 +454,13 @@ void Control::MPC::CalculateOptimizationMatrices() {
 \end{listing}
 
 \section{Szczegóły implementacji - PC} \label{sec:details-pc}
+Przygotowany do testowania algorytmu MPC skrypt w języku programowania Python składa się z trzech
+funkcjonalnych części. Pierwsza z nich została przedstawiona na listingu \ref{lst:init_py}. Sekcja
+ta odpowiada za inicicjalizację parametrów, które zostaną wysłane do platformy STM oraz użyte
+na potrzeby wyliczenia kolejnych wartości wyjściowych układu. Zmienne przechowywane są w kolekcji
+standardowej biblioteki Pythona - słowniku. Zabieg taki umożliwił odwołanie się do konkretnych
+parametrów za pomocą klucza stanowiącego nazwę danej wartości. 
+
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{python}
 projectPath = os.path.dirname(os.path.abspath(__file__))
@@ -478,6 +485,11 @@ timer = []
 \caption{Inicjalizacja danych w skrypcie Pythona}
 \label{lst:init_py}
 \end{listing}
+
+Kolejna sekcja odpowiedzialna jest za główną część skryptu, a mianowicie komunikację z
+mikrokontrolerem oraz obliczanie kolejnych wartości wyjściowych układu. Przesyłanie wiadomości
+zostało zrealizowane za pomocą interfejsu biblioteki \textit{Serial}. Na listingu \ref{lst:serial_py}
+zaprezentowano proponowaną implementację.
 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{python}
@@ -507,6 +519,7 @@ with serial.Serial('COM3', 115200, timeout=20) as ser:
 \label{lst:serial_py}
 \end{listing}
 
+Na listingu \ref{lst:write_py} przedstawiono część skryptu odpowiedzialną za zapisywanie danych.
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{python}
 _, fig = plt.subplots(2, 1, figsize=(6.4, 9.6))
