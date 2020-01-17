@@ -298,7 +298,8 @@ Poniżej zamieszczono kolejne kroki tego algorytmu.
     \item Powtórzenie algorytmu do osiągnięcia warunku stopu albo maksymalnej liczby iteracji.
     \item Zwrócenie otrzymanego sterowania $v$.  
 \end{enumerate}
-Na listingu \ref{lst:gradient_cpp} znajduje się implementacja szybkiej metody gradientowej.
+Na listingu \ref{lst:gradient_cpp} znajduje się implementacja szybkiej metody gradientowej, a
+listing \ref{lst:step_cpp} zawiera sposób, w jaki zrealizowano obliczenie kolejnego kroku w algorytmie.
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 double Control::MPC::FastGradientMethod(const std::string& msg) {
@@ -320,6 +321,29 @@ double Control::MPC::FastGradientMethod(const std::string& msg) {
 \label{lst:gradient_cpp}
 \end{listing}
 
+\begin{listing}[htb]
+\begin{minted}[linenos, breaklines]{cpp}
+void Control::MPC::CalculateProjectedGradientStep() {
+    CVector gradient(sys.v.GetRows(), 1), v_old = sys.v;
+    gradient = opt.H * sys.v + opt.W;
+    sys.w = sys.v - gradient * eigenvalues.step;
+    for (uint32_t i = 0; i < sys.v.GetRows(); i++) {
+        if (sys.w[i][0] < controlValues.min) {
+            sys.v[i][0] = controlValues.min;
+        }
+        else if (sys.w[i][0] > controlValues.max) {
+            sys.v[i][0] = controlValues.max;
+        } else {
+            sys.v[i][0] = sys.w[i][0];
+        }
+    }
+    sys.w = sys.v + (sys.v - v_old) * eigenvalues.fastConvergence;
+}
+\end{minted}
+\caption{MPC.cpp: Implementacja obliczenia kolejnego kroku w algorytmie gradientowym}
+\label{lst:step_cpp}
+\end{listing}
+    
 W celu obliczenia minimalnej i maksymalnej wartości własnej macierzy $H$ zastosowano iteracyjną
 metodę potęgową. Jej implementacja znajduje się na listingu \ref{lst:powermethod_cpp}. Algorytm
 ten umożliwia znalezienie maksymalnej, co do modułu, wartości własnej danej macierzy. Wartość
@@ -353,31 +377,10 @@ double Utils::Misc::PowerMethod(const CMatrix& matrix, uint32_t maxIterations) {
 \label{lst:powermethod_cpp}
 \end{listing}
 
-
-
-\begin{listing}[htb]
-\begin{minted}[linenos, breaklines]{cpp}
-void Control::MPC::CalculateProjectedGradientStep() {
-    CVector gradient(sys.v.GetRows(), 1), v_old = sys.v;
-    gradient = opt.H * sys.v + opt.W;
-    sys.w = sys.v - gradient * eigenvalues.step;
-    for (uint32_t i = 0; i < sys.v.GetRows(); i++) {
-        if (sys.w[i][0] < controlValues.min) {
-            sys.v[i][0] = controlValues.min;
-        }
-        else if (sys.w[i][0] > controlValues.max) {
-            sys.v[i][0] = controlValues.max;
-        } else {
-            sys.v[i][0] = sys.w[i][0];
-        }
-    }
-    sys.w = sys.v + (sys.v - v_old) * eigenvalues.fastConvergence;
-}
-\end{minted}
-\caption{MPC.cpp: Implementacja obliczenia kolejnego kroku w algorytmie gradientowym}
-\label{lst:step_cpp}
-\end{listing}
-
+W celu przetestowania zmian parametrów regulatora predykcyjnego w czasie wykonywania się programu
+konieczne okazało się zaimplementowanie nieobecnej w języku C++ funkcji realokacji pamięci
+dynamicznej. Posłużono się w tym celu tzw. obiektami funkcyjnymi. Na listingu
+\ref{lst:parameters_cpp} pokazano sposób, w jaki reinicjalizowane są parametry układu, jak i regulatora. 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 void Control::MPC::InitializeParameters(std::map<std::string, std::vector<double>> storage) {
@@ -447,8 +450,6 @@ void Control::MPC::CalculateOptimizationMatrices() {
 \caption{MPC.cpp: Implementacja wyliczenia nowych macierzy optymalizacyjnych}
 \label{lst:opt_cpp}
 \end{listing}
-
-Jak zostało zrealizowane założenie
 
 \section{Szczegóły implementacji - PC} \label{sec:details-pc}
 \begin{listing}[htb]
