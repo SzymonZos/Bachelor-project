@@ -82,9 +82,20 @@
 \pagenumbering{gobble}
 
 % Introductory pages
-\begin{abstract}
-Lorem ipsum.
 
+\begin{abstract}
+    Tematem pracy jest sprzętowa implementacja algorytmu sterowania predykcyjnego (MPC).
+    Regulacja MPC jest to proces złożony obliczeniowo. W związku z tym istnieje ryzyko
+    braku odpowiedzi mikrokontrolera w wyznaczonym czasie. Postanowiono przyjąć pewne
+    obostrzenia w celu sprawdzenia wpływu parametrów regulatora na jakość odpowiedzi
+    układu. Założono znajomość dyskretnego modelu obiektu. Ponadto przyjęto jego
+    liniowy charakter. Zaimplementowano stosowny algorytm regulacji predykcyjnej 
+    przy użyciu języka programowania C++ oraz platformy STM. Przeprowadzono testy
+    Hardware in the loop (HIL) z wykorzystaniem skryptu napisanego w języku
+    programowania Python mające na celu zweryfikowanie poprawności zaimplementowanego
+    algorytmu. Zebrane obserwacje potwierdziły teorię regulacji predykcyjnej.
+    Efekty pracy mogą stanowić punkt wyjścia dla rozwoju opracowanego przykładu
+    o bardziej zaawansowane metody, takie jak identyfikacja sterowanego obiektu.
 \end{abstract}
  
 \tableofcontents
