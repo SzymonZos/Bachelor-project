@@ -23,8 +23,8 @@ def main():
                 texfiles_copy[filename] = texfiles_copy[filename][:match.start()] + '~' +\
                                           texfiles_copy[filename][match.start()+1:]
 
-    for file, filename in zip(files, texfiles_copy):
-        with open(filepath + filename, 'w', encoding='UTF-8'):
+    for filename in texfiles_copy:
+        with open(filepath + filename, 'w', encoding='UTF-8') as file:
             file.write(texfiles_copy[filename])
 
 
