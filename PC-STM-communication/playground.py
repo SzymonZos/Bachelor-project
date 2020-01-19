@@ -8,7 +8,7 @@ def main():
     filenames = os.listdir(filepath)
 
     with ExitStack() as stack:
-        files = [stack.enter_context(open(filepath + filename, 'w+', encoding='UTF-8')) for filename in filenames]
+        files = [stack.enter_context(open(filepath + filename, 'r+', encoding='UTF-8')) for filename in filenames]
         texfiles_copy = {filename: file.read() for file, filename in zip(files, filenames)}
         for filename, file_content in texfiles_copy.items():
             listings = []
