@@ -1,13 +1,25 @@
-\documentclass[12pt, twoside, a4paper]{report}
+% Paper, encoding and fonts settings
+\documentclass[12pt, twoside, a4paper, openright]{report}
+\usepackage[top=2.5cm, bottom=2.5cm, inner=3cm, outer=2.5cm]{geometry}
 \usepackage[T1]{polski}
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
-\usepackage[top=2.5cm, bottom=2.5cm, left=3cm, right=2.5cm]{geometry}
-\usepackage{icomma}
 \usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\setlength{\parindent}{10mm}
+
+% Document structure and layout
+\usepackage{pdfpages}
+\usepackage{emptypage}
+\usepackage[toc,page]{appendix}
+
+% Proper decimal separation
+\usepackage{icomma}
+% Math, physics and numbers
 \usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{amssymb}
+
 \usepackage{graphicx}
 \usepackage[all]{nowidow}
 \usepackage{makecell}
@@ -28,7 +40,7 @@
 \usepackage{setspace}
 \usepackage{array}
 \usepackage{fancyhdr}
-\pagestyle{fancy}
+
 \usepackage[hidelinks]{hyperref}
 \usepackage[shortlabels]{enumitem}
 \usepackage{siunitx}
@@ -36,7 +48,6 @@
 
 \usepackage{minted}
 \renewcommand\listoflistingscaption{Spis listingów}
-\usepackage[polish]{babel}
 \usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{titlesec}
@@ -44,15 +55,17 @@
 \titlespacing*{\chapter}{0pt}{0pt}{40pt}
 \usepackage{rotating}
 \pgfplotsset{compat=1.8}
-\usepackage[toc,page]{appendix}
 \renewcommand{\appendixtocname}{Dodatki}
 \renewcommand{\appendixpagename}{Dodatki}
 
 \newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
 
+% Define header style
 \fancyhead{}
 \setlength{\headheight}{16pt}
-\fancyhead[RO, LE]{\chaptername: \rightmark}
+\fancyhead[RO]{\nouppercase{\rightmark}}
+\fancyhead[LE]{\nouppercase{\leftmark}}
+\pagestyle{fancy}
 
 % Forbid to split given words
 \hyphenation{LabVIEW}
@@ -72,14 +85,20 @@
 \pgfmathsmuggle\pgfmathresult\endgroup%
 }%
 \linespread{1.3}
-\usepackage{indentfirst}
-\setlength{\parindent}{10mm}
 
 \begin{document}
 
 \input{titlepage}
 
+\cleardoublepage
+
 \pagenumbering{gobble}
+
+\cleardoublepage
+
+\includepdf[pages=-]{declaration.pdf}
+
+\cleardoublepage
 
 % Introductory pages
 
