@@ -11,7 +11,11 @@
 % Document structure and layout
 \usepackage{pdfpages}
 \usepackage{emptypage}
-\usepackage[toc,page]{appendix}
+\usepackage[toc, page]{appendix}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{titlesec}
+\linespread{1.3}
 
 % Proper decimal separation
 \usepackage{icomma}
@@ -19,42 +23,32 @@
 \usepackage{amsmath}
 \usepackage{mathtools}
 \usepackage{amssymb}
+\usepackage{siunitx}
+\sisetup{locale = FR}
 
+% Graphics and plotting
 \usepackage{graphicx}
 \usepackage[all]{nowidow}
+\usepackage{rotating}
 \usepackage{makecell}
 \renewcommand\theadalign{bc}
 \graphicspath{ {graphics/} }
-\usepackage{pgfplots}
-\pgfplotsset{compat=newest}
-\usepgfplotslibrary{groupplots}
-\usepgfplotslibrary{dateplot}
-\pgfplotsset{every axis/.append style={
-             tick label style={/pgf/number format/fixed},
-             font=\scriptsize,
-             ylabel near ticks,xlabel near ticks,
-             grid=major}}
+
 \usepackage{diagbox}
 \usepackage[justification=centering]{caption}
 \usepackage{subcaption}
-\usepackage{setspace}
 \usepackage{array}
-\usepackage{fancyhdr}
 
 \usepackage[hidelinks]{hyperref}
 \usepackage[shortlabels]{enumitem}
-\usepackage{siunitx}
-\sisetup{locale = FR}
 
 \usepackage{minted}
 \renewcommand\listoflistingscaption{Spis listingów}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage{titlesec}
 \titleformat{\chapter}[hang]{\huge\bfseries}{\chaptertitlename\ \thechapter.}{0.3em}{}
 \titlespacing*{\chapter}{0pt}{0pt}{40pt}
-\usepackage{rotating}
-\pgfplotsset{compat=1.8}
+
 \renewcommand{\appendixtocname}{Dodatki}
 \renewcommand{\appendixpagename}{Dodatki}
 
@@ -67,24 +61,6 @@
 \fancyhead[LE]{\nouppercase{\leftmark}}
 \pagestyle{fancy}
 
-% Forbid to split given words
-\hyphenation{LabVIEW}
-
-\pgfplotsset{grid style={dashed}}
-% This is necessary to plot softmax function
-\pgfmathdeclarefunction{sumexp}{3}{%
-\begingroup%
-\pgfkeys{/pgf/fpu,/pgf/fpu/output format=fixed}%
-\pgfmathsetmacro{\myx}{#1}%
-\pgfmathtruncatemacro{\myxmin}{#2}%
-\pgfmathtruncatemacro{\myxmax}{#3}%
-\pgfmathsetmacro{\mysum}{0}%
-\pgfplotsforeachungrouped\XX in {\myxmin,...,\myxmax}%
-{\pgfmathsetmacro{\mysum}{\mysum+exp(\XX)}}%
-\pgfmathparse{\mysum+exp(#1)}%
-\pgfmathsmuggle\pgfmathresult\endgroup%
-}%
-\linespread{1.3}
 
 \begin{document}
 
