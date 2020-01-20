@@ -1,195 +1,198 @@
 \section{Założenia projektowe} \label{sec:assumptions}
-Jak pokazano w rozdziale \ref{ch:idea} sterowanie predykcyjne jest bardzo złożonym procesem.
-Postanowiono więc przyjąć pewne obostrzenia ułatawiające skupienie się na samym sposobie regulacji, 
-wpływie parametrów regulatora oraz obiektu na poprawność działania danego układu regulacji. W tym
-celu przyjęto następujące założenie projektowe - model matematyczny badanego układu jest znany, a
-także stały w czasie wykonywania się algorytmu. Ponadto obiekt ten jest dyskretnym układem liniowym.
-Założenie to pozwoliło na eliminację konieczności przeprowadzenia identyfikacji modelu. Do
-implementacji algorytmu MPC wykorzystano szybką metodę gradientową oraz ograniczono się do skalarnej
+Jak pokazano w~rozdziale \ref{ch:idea} sterowanie predykcyjne jest bardzo złożonym procesem.
+Postanowiono więc przyjąć pewne obostrzenia ułatawiające skupienie się na~samym sposobie regulacji, 
+wpływie parametrów regulatora oraz obiektu na~poprawność działania danego układu regulacji. W~tym
+celu przyjęto następujące założenie projektowe - model matematyczny badanego układu jest znany, a~także
+stały w~czasie wykonywania się algorytmu. Ponadto obiekt ten jest dyskretnym układem liniowym.
+Założenie to~pozwoliło na~eliminację konieczności przeprowadzenia identyfikacji modelu. Do
+implementacji algorytmu MPC wykorzystano szybką metodę gradientową oraz ograniczono się do~skalarnej
 wersji regulatora.
 Podczas oceny poprawności przeprowadzonej symulacji posłużono się następującymi kryteriami:  
 \begin{itemize}
-	\item Odpowiedź mikrokontrolera w czasie rzeczywistym.
+	\item Odpowiedź mikrokontrolera w~czasie rzeczywistym.
     \item Poprawność wyznaczonych sterowań.
     \item Poprawność otrzymanej wartości wyjściowej.
-    \item Uzyskanie wartości zadanej w skończonym czasie.
+    \item Uzyskanie wartości zadanej w~skończonym czasie.
 \end{itemize}
 
 \section{Architektura systemu} \label{sec:system}
 
 \subsection{Procesor - architektura ARM} \label{sec:arm}
-ARM (Advanced RISC Machine) jest to rodzina architektur procesorów typu RISC (Reduced Instruction
-Set Computing). Charakteryzuje się zmniejszoną liczbą instrukcji w porównaniu do CISC, co
-przekłada się na mniejsze zużycie energii. Wynika z tego zastosowanie architektury ARM
+ARM (Advanced RISC Machine) jest to~rodzina architektur procesorów typu RISC (Reduced Instruction
+Set Computing). Charakteryzuje się zmniejszoną liczbą instrukcji w~porównaniu do~CISC, co
+przekłada się na~mniejsze zużycie energii. Wynika z~tego zastosowanie architektury ARM
 w systemach wbudowanych. Dla każdego mikroprocesora jednostka sterująca (CU) jest sercem całego
-urządzenia. CU jest odpowiedzialne za operacje systemowe. Z tego powodu zaprojektowanie jednostki
-sterującej jest najważniejszą częścią w tworzeniu nowego schematu mikrokontrolera. W przypadku
-architektury ARM CU jest zaimplementowany za pomocą maszyny stanów. Dodatkowo sygnały z jednostki
-sterującej są połączone z każdym podzespołem procesora, aby zapewnić kontrolę jego operacji.
+urządzenia. CU~jest odpowiedzialne za~operacje systemowe. Z~tego powodu zaprojektowanie jednostki
+sterującej jest najważniejszą częścią w~tworzeniu nowego schematu mikrokontrolera. W~przypadku
+architektury ARM CU~jest zaimplementowany za~pomocą maszyny stanów. Dodatkowo sygnały z~jednostki
+sterującej są~połączone z~każdym podzespołem procesora, aby zapewnić kontrolę jego operacji.
 Jednostka arytmetyczno-logiczna (ALU) jest kolejną istotną częścią mikrokontrolera. Jej zadaniem
-jest prowadzenie obliczeń na liczbach całkowitych. W przypadku architektury ARM ALU posiada dwa
-32 bitowe wejścia.  
+jest prowadzenie obliczeń na~liczbach całkowitych. W~przypadku architektury ARM ALU posiada dwa
+32 bitowe wejścia. \cite{arm_en} \cite{arm_pl} \cite{arm_ofc}
 
 \subsection{Platforma STM} \label{sec:stm}
-STM32 jest to rodzina 32 bitowych mikrokontrolerów produkowana przez STMicroelectronics.
-Kontrolery są podzielone na odpowiednie serie, jednak łączy je bazowanie na 32 bitowym
-rdzeniu firmy ARM. Grupy te różnią się m.in. częstotliwością taktowania, obsługiwanymi
-urządzeniami peryferyjnymi, wsparciem dla arytmetyki zmiennoprzecinkowej, jak i możliwością
+STM32 jest to~rodzina 32~bitowych mikrokontrolerów produkowana przez STMicroelectronics.
+Kontrolery są~podzielone na~odpowiednie serie, jednak łączy je~bazowanie na~32~bitowym
+rdzeniu firmy ARM. Grupy te~różnią się m.in. częstotliwością taktowania, obsługiwanymi
+urządzeniami peryferyjnymi, wsparciem dla arytmetyki zmiennoprzecinkowej, jak i~możliwością
 cyfrowego przetwarzania sygnałów.
-Użyty w projekcie zestaw uruchomieniowy STM32 Nucleo F401RE jest wyposażony w mikrokontroler
+Użyty w~projekcie zestaw uruchomieniowy STM32 Nucleo F401RE jest wyposażony w~mikrokontroler
 STM32F401, który zapewnia wsparcie dla wspomnianej wcześniej jednostki zmiennoprzecinkowej (FPU),
 jak również instrukcji cyfrowego przetwarzania sygnałów (DSP). Procesor ten jest oparty na
-architekturze ARM Cortex M4. Platforma Nucleo za to dostarcza elastyczne
+architekturze ARM Cortex M4. Platforma Nucleo za~to~dostarcza elastyczne
 możliwości budowania oraz projektowania nowych rozwiązań sprzętowych, zarówno
-doświadczonym jak i początkującym, użytkownikom. Moduł ten łączy w sobie różne kombinacje
-aspektów wydajności oraz zużycia energii. W porównaniu do konkurencyjnych platform oferuje
-znacznie mniejsze zużycie energii podczas pracy z zasilaczem impulsowym.
-Poniżej zamieszczono pełną specyfikację.
+doświadczonym jak i~początkującym, użytkownikom. Moduł ten łączy w~sobie różne kombinacje
+aspektów wydajności oraz zużycia energii. W~porównaniu do~konkurencyjnych platform oferuje
+znacznie mniejsze zużycie energii podczas pracy z~zasilaczem impulsowym.
+Poniżej zamieszczono pełną specyfikację. \cite{stm_ds} \cite{stm_um} \cite{stm_botland}
 \begin{itemize}
 	\item Mikrokontroler: STM32F401RET6
     \begin{itemize}[label=$\star$]
-        \item Rdzeń: ARM Cortex M4 32-bit
-        \item Częstotliwość taktowania: 84 MHz
+        \item Rdzeń: ARM Cortex M4~32-bit
+        \item Częstotliwość taktowania: 84~MHz
         \item Pamięć programu Flash: 512 kB
-        \item Pamięć SRAM: 96 kB
+        \item Pamięć SRAM: 96~kB
         \item Przetwornik analogowo-cyfrowy: 12-bitowy, 10-kanałowy
         \item Ilość Timerów: 10
         \item Ilość programowalnych wejść/wyjść: 81
-        \item Interfejsy: 3x I2C, 3x USART, 4x SPI, USB 2.0 Full Speed
+        \item Interfejsy: 3x~I2C, 3x~USART, 4x~SPI, USB 2.0 Full Speed
     \end{itemize}
 	\item Dwa typy złącz:
     \begin{itemize}[label=$\star$]
-	    \item Złącza dla nakładek kompatybilnych z Arduino Uno Rev3
-        \item Standardowe piny STMicroelectronics Morpho, umożliwiające dostęp do wyprowadzeń mikrokontrolera
+	    \item Złącza dla nakładek kompatybilnych z~Arduino Uno Rev3
+        \item Standardowe piny STMicroelectronics Morpho, umożliwiające dostęp do~wyprowadzeń mikrokontrolera
     \end{itemize}
-    \item Moduł zgodny z systemem mbed (mbed.org)
-    \item Debugger ST-Link/V2 umieszczony na płytce z możliwością pracy jako oddzielne urządzenie z wyjściem SWD
+    \item Moduł zgodny z~systemem mbed (mbed.org)
+    \item Debugger ST-Link/V2 umieszczony na~płytce z~możliwością pracy jako oddzielne urządzenie z~wyjściem SWD
     \item Możliwość zasilania poprzez złącze USB
     \item Wbudowane trzy diody LED:
     \begin{itemize}[label=$\star$]
-        \item 1 x sygnalizująca napięcia zasilania
-        \item 1 x sygnalizująca komunikację
-        \item 1 x do dyspozycji użytkownika
+        \item 1~x~sygnalizująca napięcia zasilania
+        \item 1~x~sygnalizująca komunikację
+        \item 1~x~do~dyspozycji użytkownika
     \end{itemize}
     \item Dwa przyciski:
     \begin{itemize}[label=$\star$]
-        \item 1 x RESET
-        \item 1 x do dospozycji użytkownika
+        \item 1~x~RESET
+        \item 1~x~do~dospozycji użytkownika
     \end{itemize}
     \item Trzy różne interfejsy poprzez złącze miniUSB:
     \begin{itemize}[label=$\star$]
         \item Wirtualny port COM
         \item Pamięć masowa
-        \item Port do programowania / debuggowania
+        \item Port do~programowania / debuggowania
     \end{itemize}
 \end{itemize}
 
 \section{Narzędzia programistyczne} \label{sec:prog}
 
 \subsection{Języki programowania C/C++} \label{sec:cpp}
-C jest to proceduralny, strukturalny, statycznie typowany język programowania, który znajduje
-zastosowanie w implementacji systemów operacyjnych i wbudowanych. C domyślnie zapewnia
-narzędzia, które w sposób efektywny są kompilowane do kodu maszynowego. Taki kod ma porównywalną
-wydajność do programów napisanych jedynie za pomocą asemblera. Jest to powiązane ze względną
-niskopoziomowością języka C, która zrealizowana została m.in. za pomocą ręcznej alokacji
-dynamicznej pamięci, a także minimalnego wspracia w czasie wykonywania programu. 
-Pomimo swoich niewątpliwych zalet istnieją także wady zastosowania tylko i wyłącznie tego
-języka. Przykładem niewłaściwych a dopuszczalnych praktyk programistycznych w języku C są
+C jest to~proceduralny, strukturalny, statycznie typowany język programowania, który znajduje
+zastosowanie w~implementacji systemów operacyjnych i~wbudowanych. C~domyślnie zapewnia
+narzędzia, które w~sposób efektywny są~kompilowane do~kodu maszynowego. Taki kod ma~porównywalną
+wydajność do~programów napisanych jedynie za~pomocą asemblera. Jest to~powiązane ze~względną
+niskopoziomowością języka C, która zrealizowana została m.in. za~pomocą ręcznej alokacji
+dynamicznej pamięci, a~także minimalnego wspracia w~czasie wykonywania programu. 
+Pomimo swoich niewątpliwych zalet istnieją także wady zastosowania tylko i~wyłącznie tego
+języka. Przykładem niewłaściwych a~dopuszczalnych praktyk programistycznych w~języku C~są
 możliwość wywołania niezadeklarowanej funkcji, czy też przyjmowanie przez funkcje zadeklarowane
 bez żadnego argumentu dowolnej ilości parametrów. Ponadto legalną operacją jest inicjalizacja
-tablicy literałem łańcuchowym składającym się z większej ilości elementów niż jest przeznaczonej
+tablicy literałem łańcuchowym składającym się z~większej ilości elementów niż jest przeznaczonej
 pamięci dla tej zmiennej.
 
-C++ jest to wieloparadygmatowy, statycznie typowany, kompilowalny język programowania zapewniający
-znacznie wyższy poziom abstrakcji w porównaniu do języka C. Na potrzeby pracy inżynierskiej
-wykorzystano najnowszy, w pełni dostępny, standard tego języka - C++17. 
+C++ jest to~wieloparadygmatowy, statycznie typowany, kompilowalny język programowania zapewniający
+znacznie wyższy poziom abstrakcji w~porównaniu do~języka C. Na~potrzeby pracy inżynierskiej
+wykorzystano najnowszy, w~pełni dostępny, standard tego języka - C++17. 
 Wspomniana abstrakcja danych została
-zrealizowana za pomocą zastosowania paradygmatu programowania obiektowego. Zastosowanie interfejsów
-i 'schowanie' implementacji programu umożliwia lepsze przeprowadzenie testów jednostkowych, a także
+zrealizowana za~pomocą zastosowania paradygmatu programowania obiektowego. Zastosowanie interfejsów
+i 'schowanie' implementacji programu umożliwia lepsze przeprowadzenie testów jednostkowych, a~także
 budowę wieloplatformowych aplikacji. Podejście obiektowe umożliwia ponadto zaprowadzenie znacznie
-większego porządku w projektowaniu danego rozwiązania. Jednakże największym atutem takiego 
-rozwiązania jest hermetyzacja danych, która zapobiega wprowadzeniu innych wartości do zmiennych
-przechowywanych w danej klasie w niepożądanym miejscu programu.
-W przypadku programowania rozwiązań przeznaczonych pod współpracę z systemami wbudowanymi użycie
+większego porządku w~projektowaniu danego rozwiązania. Jednakże największym atutem takiego 
+rozwiązania jest hermetyzacja danych, która zapobiega wprowadzeniu innych wartości do~zmiennych
+przechowywanych w~danej klasie w~niepożądanym miejscu programu.
+W przypadku programowania rozwiązań przeznaczonych pod współpracę z~systemami wbudowanymi użycie
 najnowszych możliwości nowszych standardów języka C++ nie jest czasem możliwe. Przykładem jest
 w tym przypadku obsługa wyjątków, która pochłania znaczne ilości mocy obliczeniowej, jak
 i potrzebnej pamięci. Zagrożeniem jest także używanie Standard Template Library (STL), biblioteki
-zawierającej standardowe algorytmy, kontenery i iteratory. Implementacja tejże biblioteki obfita
-jest w operacje na stercie, któtych użycie powinno być minimalizowane w świecie systemów
-wbudowanych ze względu na fragmentację niewielkiej ilości dostępnej pamięci oraz dłuższy czas
-jej alokacji i dealokacji. Ponadto STL zawiera operacje rzucające wcześniej wymienione wyjątki. 
+zawierającej standardowe algorytmy, kontenery i~iteratory. Implementacja tejże biblioteki obfita
+jest w~operacje na~stercie, któtych użycie powinno być minimalizowane w~świecie systemów
+wbudowanych ze~względu na~fragmentację niewielkiej ilości dostępnej pamięci oraz dłuższy czas
+jej alokacji i~dealokacji. Ponadto STL zawiera operacje rzucające wcześniej wymienione wyjątki.
+\cite{cpp_bjarne} 
 
 \subsection{Język programowania Python} \label{sec:python}
-Python jest to interpretowany, interaktywny, zoorientowany obiketowo język programowania.
-Zawiera on moduły, wyjątki, dynamiczne typowanie, wysokopoziomowe typy danych i klasy.
-Python łączy w sobie godną uwagi moc z bardzo czystą składnią. Posiada on interfejs do bardzo
-dużej ilości biblioteki i wywołań systemowych. Dodatkowo jest możliwe jego rozszerzenie o własne
-biblioteki w C albo C++. Python jest także wykorzystywany jako dodatkowy język przy projektowaniu
+Python jest to~interpretowany, interaktywny, zoorientowany obiketowo język programowania.
+Zawiera on~moduły, wyjątki, dynamiczne typowanie, wysokopoziomowe typy danych i~klasy.
+Python łączy w~sobie godną uwagi moc z~bardzo czystą składnią. Posiada on~interfejs do~bardzo
+dużej ilości biblioteki i~wywołań systemowych. Dodatkowo jest możliwe jego rozszerzenie o~własne
+biblioteki w~C~albo C++. Python jest także wykorzystywany jako dodatkowy język przy projektowaniu
 aplikacji, które potrzebują programowalnego interfejsu. Warta uwagi jest również przenośność
 tego języka pomiędzy popularnymi systemami operacyjnymi takimi jak Linux, Mac, czy też Windows.
 
-W projekcie inżynierkism skorzystano z kilku wysokopoziomowych bibliotek dostępnych
-w Pythonie. Do komunikacji z platformą STM została wykorzystana biblioteka \textit{Serial}, która
-zawiera odpowiednią implementację wysyłania i odbierania danych za pośrednictwem portu szeregowego.
-Przydatna okazała się także biblioteka \textit{NumPy} oferująca klasy macierzy, a także wydajne
+W projekcie inżynierkism skorzystano z~kilku wysokopoziomowych bibliotek dostępnych
+w Pythonie. Do~komunikacji z~platformą STM została wykorzystana biblioteka \textit{Serial}, która
+zawiera odpowiednią implementację wysyłania i~odbierania danych za~pośrednictwem portu szeregowego.
+Przydatna okazała się także biblioteka \textit{NumPy} oferująca klasy macierzy, a~także wydajne
 obliczenia numeryczne. Zastosowanie znalazła także biblioteka \textit{Pyplot}, która jest
-zaopatrzona w funkcje pozwalające graficznie zaprezentować wyniki działania programu. Działanie
-dwóch ostatnich bibliotek jest bardzo zbliżone do analogicznych funkcji środowiska MATLAB.
+zaopatrzona w~funkcje pozwalające graficznie zaprezentować wyniki działania programu. Działanie
+dwóch ostatnich bibliotek jest bardzo zbliżone do~analogicznych funkcji środowiska MATLAB.
+\cite{python}
 
 \subsection{Środowisko MATLAB} \label{sec:matlab}
-MATLAB (matrix laboratory) jest to wieloparadygmatowe i zamknięte środowisko służące do wykonywania 
-obliczeń numerycznych rozwijane przez firmę Mathworks. MATLAB pozwala na bardzo wygodne dla użytkownika
-operacje na macierzach, graficzną reprezentację danych w formie wykresów, implementację dużej liczby
-algorytmów, a także możliwość stworzenia interfejsu użytkownika. Jednym z pakietów tego środowiska 
-jest \textit{Simulink} - graficzne środowisko programistyczne przeznaczone do modelowania, analizy
-oraz symulacji systemów dynamicznych. Rozszerzenie to oferuje integrację z resztą modułów MATLABa,
+MATLAB (matrix laboratory) jest to~wieloparadygmatowe i~zamknięte środowisko służące do~wykonywania 
+obliczeń numerycznych rozwijane przez firmę Mathworks. MATLAB pozwala na~bardzo wygodne dla użytkownika
+operacje na~macierzach, graficzną reprezentację danych w~formie wykresów, implementację dużej liczby
+algorytmów, a~także możliwość stworzenia interfejsu użytkownika. Jednym z~pakietów tego środowiska 
+jest \textit{Simulink} - graficzne środowisko programistyczne przeznaczone do~modelowania, analizy
+oraz symulacji systemów dynamicznych. Rozszerzenie to~oferuje integrację z~resztą modułów MATLABa,
 co znacznie upraszcza proces tworzenia modelu. Podstawą funkcjonalności pakietu \textit{Simulink}
 są programowalne bloki, które zawierają odpowiednie wywołania funkcji numerycznych. Biblioteka ta
-znalazła szerokie zastosowanie w automatyce i cyfrowym przetwarzaniu sygnałów.
+znalazła szerokie zastosowanie w~automatyce i~cyfrowym przetwarzaniu sygnałów. \cite{matlab}
 
 \subsection{STM32CubeMX} \label{sec:cube}
-STM32CubeMX jest to graficzne narzędzie umożliwiające prostą konfigurację mikrokontrolerów oraz
-mikroprocesorów z rodziny STM32. Program ten jest w stanie wygenerować adekwatny system plików
-zawierających kod w C przeznaczony do użycia dla rodziny rdzeni Arm Cortex-M. Biblioteka, z której
-wywołań korzysta wygenerowany kod ma formę warstwy abstrakcji sprzętowej (HAL). Takie rozwiązanie
-umożliwia pominięcie operacji na rejestrach procesora w trakcie tworzenia aplikacji przez użytkownika.
+STM32CubeMX jest to~graficzne narzędzie umożliwiające prostą konfigurację mikrokontrolerów oraz
+mikroprocesorów z~rodziny STM32. Program ten jest w~stanie wygenerować adekwatny system plików
+zawierających kod w~C~przeznaczony do~użycia dla rodziny rdzeni Arm Cortex-M. Biblioteka, z~której
+wywołań korzysta wygenerowany kod ma~formę warstwy abstrakcji sprzętowej (HAL). Takie rozwiązanie
+umożliwia pominięcie operacji na~rejestrach procesora w~trakcie tworzenia aplikacji przez użytkownika.
+\cite{stm_main}
 
 \subsection{CMake} \label{sec:cmake}
-CMake jest to otwartoźródłowa, wieloplatformowa rodzina narzędzi przeznaczonych do budowania oraz
-testowania oprogramowania. CMake jest używany do kontrolowania kompilacji kodów źródłowych, używając
-prostych, niezależnych od platformy i kompilatora plików konfiguracyjnych. Program ten generuje
-natywne pliki Makefile, a także przestrzenie robocze, które mogą być użyte w dowolnym zintegrowanym
-środowisku programistycznym. 
+CMake jest to~otwartoźródłowa, wieloplatformowa rodzina narzędzi przeznaczonych do~budowania oraz
+testowania oprogramowania. CMake jest używany do~kontrolowania kompilacji kodów źródłowych, używając
+prostych, niezależnych od~platformy i~kompilatora plików konfiguracyjnych. Program ten generuje
+natywne pliki Makefile, a~także przestrzenie robocze, które mogą być użyte w~dowolnym zintegrowanym
+środowisku programistycznym. \cite{cmake}
 
-\subsection{Kompilator i linker} \label{sec:gcc}
-Do kompilacji i linkowania wykorzystano zestaw narzędzi programistycznych GNU przeznaczony dla
-systemów wbudowanych opartych o architekturę Arm (The GNU Embedded Toolchain Arm), w którego
-skład wchodzą m.in. kompilator języka C - arm-none-eabi-gcc, kompilator języka C++
-- arm-none-eabi-g++, a także linker - ld. Zdecydowano się na ten zestaw narzędzi ze względu na 
-otwartoźródłowość tego projektu.
+\subsection{Kompilator i~linker} \label{sec:gcc}
+Do kompilacji i~linkowania wykorzystano zestaw narzędzi programistycznych GNU przeznaczony dla
+systemów wbudowanych opartych o~architekturę Arm (The GNU Embedded Toolchain Arm), w~którego
+skład wchodzą m.in. kompilator języka C~- arm-none-eabi-gcc, kompilator języka C++
+- arm-none-eabi-g++, a~także linker - ld. Zdecydowano się na~ten zestaw narzędzi ze~względu na~
+otwartoźródłowość tego projektu. \cite{toolchain}
 
 \subsection{Regex} \label{sec:regex}
-Wyrażenia regularne (regex) są to sekwencje znaków, które definiują wzór wyszukiwania. Regex został
-rozwinięty jako technika zarówno w teoretycznej informatyce, jak i w teorii języków formalnych.
-Z reguły wyrażenia regularne są wykorzystywane w operacjach 'znajdź' lub 'znajdź i zamień', które
-zdefiniowane są na łańcuchach znakowych. Innym zastosowaniem ich jest weryfikacja poprawności podanych
-danych na wejściu. Istnieją dwie wiodące składnie do zapisu wyrażeń regularnych: pierwsza z nich
-wchodzi w skład standardu POSIX, a druga jest wzorowana na oryginalnej implementacji języka Perl. 
+Wyrażenia regularne (regex) są~to~sekwencje znaków, które definiują wzór wyszukiwania. Regex został
+rozwinięty jako technika zarówno w~teoretycznej informatyce, jak i~w~teorii języków formalnych.
+Z reguły wyrażenia regularne są~wykorzystywane w~operacjach 'znajdź' lub 'znajdź i~zamień', które
+zdefiniowane są~na~łańcuchach znakowych. Innym zastosowaniem ich jest weryfikacja poprawności podanych
+danych na~wejściu. Istnieją dwie wiodące składnie do~zapisu wyrażeń regularnych: pierwsza z~nich
+wchodzi w~skład standardu POSIX, a~druga jest wzorowana na~oryginalnej implementacji języka Perl.
+\cite{regex_pl} \cite{regex_eng}
 
 \section{Przykład referencyjny} \label{sec:ref}
-Do oceny poprawności implementacji rozwiązania wykorzystano 2 przykłady referencyjne, które zostały
-przygotowane w \ref{sec:matlab} środowisku MATLAB. Jeden z nich posłużył jako zapoznanie się ze
-sposobem regulacji MPC. Został on wykonany w środowisku \textit{Simulink}. 
-%Tu potrzebne zdjęcia razem z opisem.
-Do weryfikacji poprawności obliczeń przeprowadzonych na platformie STM zaimplementowano analogiczny
-alogrytm jako skrypt środowiska MATLAB.  
+Do oceny poprawności implementacji rozwiązania wykorzystano 2~przykłady referencyjne, które zostały
+przygotowane w~\ref{sec:matlab} środowisku MATLAB. Jeden z~nich posłużył jako zapoznanie się ze
+sposobem regulacji MPC. Został on~wykonany w~środowisku \textit{Simulink}. 
+%Tu potrzebne zdjęcia razem z~opisem.
+Do weryfikacji poprawności obliczeń przeprowadzonych na~platformie STM zaimplementowano analogiczny
+alogrytm jako skrypt środowiska MATLAB. \cite{matlab}
 
 \section{Sposób testowania} \label{sec:tests}
-Testy zostały przeprowadzone jako symulacja Hardware in the loop (HIL). Jest to technika używana
-do rozwoju i testowania złożonych wbudowanych systemów czasu rzeczywistego. Symulacja HIL zapewnia
+Testy zostały przeprowadzone jako symulacja Hardware in~the loop (HIL). Jest to~technika używana
+do rozwoju i~testowania złożonych wbudowanych systemów czasu rzeczywistego. Symulacja HIL zapewnia
 efektywne możliwości przeprowadzenia testów danej platformy poprzez przekazanie kontroli nad 
-modelem matematycznym tejże platformie. Właściwości sterowanego modelu są włączane do próby testowej
+modelem matematycznym tejże platformie. Właściwości sterowanego modelu są~włączane do~próby testowej
 poprzez dodanie adekwatnego modelu matematycznego reprezentującego opisywany układ dynamiczny. 
-Implementacja symulacji HIL została wykonana w języku programowania Python ze względu na łatwą
-zdolność integracji różnych bibliotek, co pokazno w rozdziale \ref{sec:python}. 
-
+Implementacja symulacji HIL została wykonana w~języku programowania Python ze~względu na~łatwą
+zdolność integracji różnych bibliotek, co~pokazno w~rozdziale \ref{sec:python}. \cite{hil}

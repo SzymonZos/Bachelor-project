@@ -1,67 +1,68 @@
 \section{Wstęp}
-Model predictive control (MPC) jest to zaawansowana metoda sterowania, która
-polega na takim dobraniu sterowania, aby spełniało ono szereg ograniczeń. Od lat 80. XX wieku
+Model predictive control (MPC) jest to~zaawansowana metoda sterowania, która
+polega na~takim dobraniu sterowania, aby spełniało ono szereg ograniczeń. Od~lat 80. XX~wieku
 algorytm ten wykorzystywany jest przemyśle procesowym w~zakładach chemicznych i~rafineriach 
-ropy naftowej. W ostatnich latach MPC znalazło zastosowanie także w elektrowniach i~elektronice
-mocy. Sterowanie predykcyjne wykorzystuje dynamiczny model obiektu, najczęściej jest to empiryczny
-model pozyskany za pomocą indetyfikacji systemów. Główną zaletą MPC jest optymalizacja obecnego
-przedziału czasowego, biorąc pod uwagę przyszłe stany obiektu. Jest to osiągnięte poprzez
-optymalizację funkcji jakości w przedziale skończonego horyzontu czasowego, ale z~wykorzystaniem jedynie sterowania wyliczonego
-dla obecnej chwili czasu. Proces ten jest powtarzany z każdą iteracją algorytmu rozwiązującego
-układ równań różniczkowych opisujących dany układ. Taki schemat regulacji powoduje, że istnieje
-możliwość przewidzenia przyszłych zdarzeń (występujących zgodnie z podanym modelem wartości zadanej)
-i podjęcia odpowiednich działań regulujących pracę układem we wcześniejszych chwilach. Sterowanie
+ropy naftowej. W~ostatnich latach MPC znalazło zastosowanie także w~elektrowniach i~elektronice
+mocy. Sterowanie predykcyjne wykorzystuje dynamiczny model obiektu, najczęściej jest to~empiryczny
+model pozyskany za~pomocą indetyfikacji systemów. Główną zaletą MPC jest optymalizacja obecnego
+przedziału czasowego, biorąc pod uwagę przyszłe stany obiektu. Jest to~osiągnięte poprzez
+optymalizację funkcji jakości w~przedziale skończonego horyzontu czasowego, ale z~wykorzystaniem jedynie sterowania wyliczonego
+dla obecnej chwili czasu. Proces ten jest powtarzany z~każdą iteracją algorytmu rozwiązującego
+układ równań różniczkowych opisujących dany układ. Taki schemat regulacji powoduje, że~istnieje
+możliwość przewidzenia przyszłych zdarzeń (występujących zgodnie z~podanym modelem wartości zadanej)
+i podjęcia odpowiednich działań regulujących pracę układem we~wcześniejszych chwilach. Sterowanie
 predykcyjne jest zazwyczaj zaimplementowane jako dyskretny regulator, lecz obecnie prowadzone są
-badania mające na celu uzyskanie szybszej odpowiedzi przy użyciu specjalnie do tego przygotowanych
-układów analogowych.
+badania mające na~celu uzyskanie szybszej odpowiedzi przy użyciu specjalnie do~tego przygotowanych
+układów analogowych. \cite{mpc_book} \cite{mpc_pl} \cite{mpc_en}
 
 \section{Sposób działania} \label{sec:howitworks}
-Zasada pracy regulatora MPC polega na minimalizacji różnic między wartościami predykowanymi:
-$y_{k+i|k}$ w chwili obecnej $k$ na przyszłą $k+i$, a wartościami zadanymi dla tych wyjść $r(i)$.
+Zasada pracy regulatora MPC polega na~minimalizacji różnic między wartościami predykowanymi:
+$y_{k+i|k}$ w~chwili obecnej $k$ na~przyszłą $k+i$, a~wartościami zadanymi dla tych wyjść $r(i)$.
 Przez minimalizację tychże różnic rozumiana jest minimalizacja określonego kryterium jakości $J$. W
-następnej chwili czasu $(k+1)$ następuje kolejny pomiar sygnału na wyjściu obiektu, a cała procedura
-powtarzana jest z takim samym horyzontem predykcji $N_{p}$. W tym celu stosowana jest
-więc zasada sterowania repetycyjnego bazującego na przesuwnym horyzoncie czasu. W algorytmie regulacji MPC
-obecny jest także tzw. horyzont sterowania $N_{c}$ (gdzie $N_{c} \leqslant N_{p}$), po którego upływie przyrost sygnału
-sterującego wynosi zero. W ten sposób zapewnione są własności całkujące układu regulacji predykcyjnej.
-\newline Algorytmy MPC cechują się następującymi wymogami i właściwościami:
+następnej chwili czasu $(k+1)$ następuje kolejny pomiar sygnału na~wyjściu obiektu, a~cała procedura
+powtarzana jest z~takim samym horyzontem predykcji $N_{p}$. W~tym celu stosowana jest
+więc zasada sterowania repetycyjnego bazującego na~przesuwnym horyzoncie czasu. W~algorytmie regulacji MPC
+obecny jest także tzw. horyzont sterowania $N_{c}$ (gdzie $N_{c} \leqslant N_{p}$), po~którego upływie przyrost sygnału
+sterującego wynosi zero. W~ten sposób zapewnione są~własności całkujące układu regulacji predykcyjnej.
+\cite{mpc_book} \cite{mpc_pl} \cite{mpc_en}
+\newline Algorytmy MPC cechują się następującymi wymogami i~właściwościami:
 \begin{itemize}
 	\item Wymaganie wyznaczenia wartości przyszłych sygnału sterującego.
 	\item Sterowanie według zdefiniowanej trajektorii referencyjnej dla wielkości wyjściowej.
-    \item Uwzględnienie przyszłych zmian wartości zadanej. Wcześniejsza reakcja regulatora na 
-    przyszłą zmianę wartości referencyjnej kompensuje negatywny wpływ opóźnienia na działanie układu.
-	\item Stabilna regulacja obiektów, które nie są minimalnofazowe bez uwzględnienia tego faktu podczas
+    \item Uwzględnienie przyszłych zmian wartości zadanej. Wcześniejsza reakcja regulatora na~
+    przyszłą zmianę wartości referencyjnej kompensuje negatywny wpływ opóźnienia na~działanie układu.
+	\item Stabilna regulacja obiektów, które nie są~minimalnofazowe bez uwzględnienia tego faktu podczas
     syntezy regulatora.
 \end{itemize}
-Realizację metody sterowania predykcyjnego można zapisać w czterech następujących krokach:
+Realizację metody sterowania predykcyjnego można zapisać w~czterech następujących krokach:
 \begin{enumerate}
     \item Pomiar lub estymacja aktualnego stanu obiektu.
     \item Obliczenie przyszłych próbek wyjść systemu.
-    \item Zaaplikowanie sygnałów sterujących tylko do następnej chwili czasu.
+    \item Zaaplikowanie sygnałów sterujących tylko do~następnej chwili czasu.
     \item Powtórzenie algorytmu dla kolejnej chwili czasu.
 \end{enumerate}
 
 \section{Model obiektu} \label{sec:model}
-Do poprawności działania regulatora MPC niezbędna jest identyfikacja modelu obiektu, który ma być wysterowany.
-Obecnie wykorzystuje się model w postaci równań stanu, podczas gdy w przeszłości korzystano z modelu
-odpowiedzi skokowej. Takie podejście wymaga także zaprojektowania obserwatora stanu, używając do tego
-metod znanych z teorii sterowania. Model obiektu może być zarówno liniowy, jak i nieliniowy. Jednakże,
-użycie modelu nieliniowego prowadzi do nieliniowej optymalizacji, co powoduje zwieloktrotnienie trudności
-obliczeniowej. Przekłada się to na zwiększenie wymagań odnośnie częstotliwości taktowania procesora
-w implementacji sprzętowej. Wynika z tego stwierdzenie, że modele liniowe mają największe znaczenie
-praktyczne z uwagi na możliwość przeprowadzenia obliczeń w czasie rzeczywistym nawet bez wygórowanych
-wymagań hardware'owych. Rozwiązaniem tego problemu jest zastosowanie regultaora predykcyjnego w połączeniu
-z linearyzacją modelu obiektu w konkretnym punkcie pracy. Następnie wyznaczone są sterowania tak jak dla
+Do poprawności działania regulatora MPC niezbędna jest identyfikacja modelu obiektu, który ma~być wysterowany.
+Obecnie wykorzystuje się model w~postaci równań stanu, podczas gdy w~przeszłości korzystano z~modelu
+odpowiedzi skokowej. Takie podejście wymaga także zaprojektowania obserwatora stanu, używając do~tego
+metod znanych z~teorii sterowania. Model obiektu może być zarówno liniowy, jak i~nieliniowy. Jednakże,
+użycie modelu nieliniowego prowadzi do~nieliniowej optymalizacji, co~powoduje zwieloktrotnienie trudności
+obliczeniowej. Przekłada się to~na~zwiększenie wymagań odnośnie częstotliwości taktowania procesora
+w implementacji sprzętowej. Wynika z~tego stwierdzenie, że~modele liniowe mają największe znaczenie
+praktyczne z~uwagi na~możliwość przeprowadzenia obliczeń w~czasie rzeczywistym nawet bez wygórowanych
+wymagań hardware'owych. Rozwiązaniem tego problemu jest zastosowanie regultaora predykcyjnego w~połączeniu
+z linearyzacją modelu obiektu w~konkretnym punkcie pracy. Następnie wyznaczone są~sterowania tak jak dla
 liniowego przypadku. Tak zrealizowany algorytm gwarantuje jedynie rozwiązanie suboptymalne, jednak nie
-rzutuje to w żaden sposób na przydatność jego realizacji.
+rzutuje to~w~żaden sposób na~przydatność jego realizacji. \cite{mpc_book} \cite{mpc_pl} \cite{mpc_en}
 
 \section{Kryterium jakości regulacji} \label{sec:quality}
-Jak już wcześniej pokazano w rozdziale \ref{sec:howitworks} w celu wyznaczenia wartości sterowań
-w obecnej i następnych chwilach wyznacza się minimum funkcji celu. Funkcja ta określa jakość pracy
-regulatora na horyzoncie predykcji. Można stwierdzić, że wartość sygnału sterującego jest wyznaczana
-poprzez minimalizację wskaźnika jakości regulacji, który jest inheretnie związany z predykcją wyjścia
-obiektu.
-\newline W przypadku skalarnym funkcję celu można opisać następującym równaniem:
+Jak już wcześniej pokazano w~rozdziale \ref{sec:howitworks} w~celu wyznaczenia wartości sterowań
+w obecnej i~następnych chwilach wyznacza się minimum funkcji celu. Funkcja ta~określa jakość pracy
+regulatora na~horyzoncie predykcji. Można stwierdzić, że~wartość sygnału sterującego jest wyznaczana
+poprzez minimalizację wskaźnika jakości regulacji, który jest inheretnie związany z~predykcją wyjścia
+obiektu. \cite{mpc_book} \cite{mpc_pl} \cite{mpc_en} \cite{nuclear}
+\newline W~przypadku skalarnym funkcję celu można opisać następującym równaniem:
 \begin{equation}
     \begin{dcases}
         J=R_{y}\sum _{i=1}^{N_{p}}(r_{k}-y_{i|k})^{2}+R_{u}\sum _{i=1}^{N_{c}}{(u_{i|k}-u_{k-1})}^{2}\\
@@ -71,19 +72,21 @@ obiektu.
 \label{eq:quality}
 \end{equation}
 \begin{align*}
-    x_{k} &= \text{wektor zmiennych stanu w chwili }k\\
-    y_{k} &= \text{zmienna wyjściowa w chwili} k\\
-    r_{k} &= \text{zmienna referencyjna w chwili} k\\
-    u_{k} &= \text{sterowanie w chwili }k\\
+    x_{k} &= \text{wektor zmiennych stanu w~chwili }k\\
+    y_{k} &= \text{zmienna wyjściowa w~chwili} k\\
+    r_{k} &= \text{zmienna referencyjna w~chwili} k\\
+    u_{k} &= \text{sterowanie w~chwili }k\\
     N_{p} &= \text{horyzont predykcji}\\
     N_{c} &= \text{horyzont sterowań}\\
-    i|k &= \text{predykcja w chwili }k\text{ odnosząca się do chwili }i\\
+    i|k &= \text{predykcja w~chwili }k\text{ odnosząca się do~chwili }i\\
     R_{y} &= \text{współczynnik wagowy wyjścia }y\\
     R_{u} &= \text{współczynnik wagowy sterowania}u\\
-    A, B, C &= \text{macierze przestrzeni stanu}
+    A, B, C~&= \text{macierze przestrzeni stanu}
 \end{align*}
 
 \section{Problem programowania kwadratowego} \label{sec:qp}
+Poniżej przedstawiono sformułowanie problemu sterowania predykcyjnego dla optymalizacji
+algorytmem programowania kwadratowego. \cite{mpc_book} \cite{mpc_pl} \cite{mpc_en} \cite{nuclear} 
 \begin{equation}
     J=\frac{1}{2}U^{T}HU+W^{T}U
     \label{eq:J}
@@ -108,19 +111,19 @@ obiektu.
 \begin{equation}
     R_{u} = R_{1} 
     \begin{bmatrix}
-	    1 & 0 & 0 & \cdots & 0 \\[-0.8ex]
-	    0 & 1 & 0 & \cdots & 0 \\[-0.8ex]
-	    0 & 0 & 1 & \cdots & 0 \\[-0.8ex]
+	    1~& 0~& 0~& \cdots & 0~\\[-0.8ex]
+	    0~& 1~& 0~& \cdots & 0~\\[-0.8ex]
+	    0~& 0~& 1~& \cdots & 0~\\[-0.8ex]
         \vdots & \vdots & \vdots & \ddots & \vdots \\[-0.8ex]
-        0 & 0 & 0 & \cdots & 1
+        0~& 0~& 0~& \cdots & 1
 	\end{bmatrix}_{N_{c} \times N_{c}}
 \label{eq:Rw}
 \end{equation}
 \begin{equation}
 	\phi = \begin{bmatrix}
-	CB & 0 & 0 & \cdots & 0 \\
-	CAB & CB & 0 & \cdots & 0 \\
-	CA^{2}B & CAB & CB & \cdots & 0 \\
+	CB & 0~& 0~& \cdots & 0~\\
+	CAB & CB~& 0~& \cdots & 0~\\
+	CA^{2}B & CAB & CB~& \cdots & 0~\\
     \vdots & \vdots & \vdots &  & \vdots \\
     CA^{Np-1}B & CA^{Np-2}B & CA^{Np-3}B & \cdots & CA^{Np-Nc}B
 	\end{bmatrix}
@@ -138,35 +141,29 @@ obiektu.
 \end{equation}
 \begin{equation}
     R_{s} = r_{k}\begin{bmatrix}
-    1 \\
-    1 \\
+    1~\\
+    1~\\
     \vdots \\
     1
     \end{bmatrix}_{N_{p} \times 1}
 \label{eq:Y}
 \end{equation}
 
-\section{Pozostałe rodzaje regulatorów klasy MPC} \label{sec:other}
-
-\begin{itemize}
-	\item Nonlinear MPC
-	\item Explicit MPC
-    \item Robust MPC
-\end{itemize}
-
-\section{Wady i zalety w porównaniu z regulatorem PID} \label{sec:comparison}
+\section{Wady i~zalety w~porównaniu z~regulatorem PID} \label{sec:comparison}
+Poniżej przedstawiono tabelaryczne ujęcie porównania regulacji PID i MPC.
+\cite{mpc_book} \cite{mpc_pl} \cite{mpc_en}
 
 \begin{table}[htb]
 	\centering
 	\begin{tabular}{c|c|c}
 	\toprule
 	Cecha & Regulator PID & Regulator MPC \\ \bottomrule
-	ograniczenia wartości & brak & \makecell{uwzględnione w projekcie:\\twarde albo miękkie} \\ \midrule
+	ograniczenia wartości & brak & \makecell{uwzględnione w~projekcie:\\twarde albo miękkie} \\ \midrule
 	optymalność sterowania & brak & charakter optymalny \\ \midrule
-	liczba wejść i wyjść & zazwyczaj SISO & MIMO \\ \midrule
+	liczba wejść i~wyjść & zazwyczaj SISO & MIMO \\ \midrule
 	model matematyczny & nie jest konieczny & \makecell{niezbędny (może być wyliczony \\ iteracyjnie poprzez indetyfikację procesu)} \\
 	\bottomrule
 	\end{tabular}
-\caption{Porównanie regulacji PID i MPC}
+\caption{Porównanie regulacji PID i~MPC}
 \label{tab:comp_pid_mpc}
 \end{table}

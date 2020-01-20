@@ -1,31 +1,32 @@
 \section{Wyniki}
-Zebrane przykładowe wyniki...
+Zebrane przykładowe wyniki pozwoliły na zapoznanie się z podstawowymi cechami regulacji
+predykcyjnej. Wyciągnięto także następujące wnioski.
 
 \section{Wnioski}
-Realizacja postawionych w rozdziale \ref{sec:assumptions} założeń pozwoliła na sprawdzenie
-wpływu horyzontu predykcji oraz sterowań na jakość otrzymanej regulacji. Zbyt mały horyzont
-predykcji w badanym przypadku skutkował sporą amplitudą kolejnych początkowych sterowań. Zbyt
-duży horyzont predykcji wpływał na zwiększenie się opóźnienia w układzie regulacji. Zwiększenie się
-horyzontu sterowań było ściśle powiązane z zwiększeniem się złożoności obliczeniowej problemu,
+Realizacja postawionych w~rozdziale \ref{sec:assumptions} założeń pozwoliła na~sprawdzenie
+wpływu horyzontu predykcji oraz sterowań na~jakość otrzymanej regulacji. Zbyt mały horyzont
+predykcji w~badanym przypadku skutkował sporą amplitudą kolejnych początkowych sterowań. Zbyt
+duży horyzont predykcji wpływał na~zwiększenie się opóźnienia w~układzie regulacji. Zwiększenie się
+horyzontu sterowań było ściśle powiązane z~zwiększeniem się złożoności obliczeniowej problemu,
 a przede wszystkim konieczności użycia większej ilości pamięci.
-Ponadto potwierdzono cechę charakterystyczną sterowania predykcyjnego, a mianowicie minimalizację
-wartości pomiędzy kolejnymi sterowaniami. Im horyzont predykcji był większy, tym owa różnica
+Ponadto potwierdzono cechę charakterystyczną sterowania predykcyjnego, a~mianowicie minimalizację
+wartości pomiędzy kolejnymi sterowaniami. Im~horyzont predykcji był większy, tym owa różnica
 była mniejsza.
 
-\section{Pomysły na rozwój projektu}
-Istnieją dwie płaszczyzny, na których można rozwinąć przygotowany projekt. Pierwsza z nich dotyczy
-doboru biblioteki do obsługi rejestrów mikrokontrolera platformy STM. Jedną z bardziej przyjaznych
-użytkowniki alternatywnych opcji do korzystania z Cube'a jest otwartoźródłowy projekt
-\textit{libopencm3}. Oferowane rozwiązania tejże biblioteki są znacznie bardziej przejrzyste
-oraz lepiej udokumentowane. Z jej pomocą można bezproblemowo zastąpić komunikację opartą na
-opisanym w rozdziale \ref{sec:uart} pollingu przerwaniami systemowymi. Kolejnym aspektem
-stricte programistycznym jest zmiana sposobu alokacji używanych w rozwiązaniu macierzy z
-dynamicznego na statyczny. Przeniesienie wykonywania największej części obliczeń ze sterty
-na stos poprawiłoby w znaczny sposób wydajność napisanego programu.
+\section{Pomysły na~rozwój projektu}
+Istnieją dwie płaszczyzny, na~których można rozwinąć przygotowany projekt. Pierwsza z~nich dotyczy
+doboru biblioteki do~obsługi rejestrów mikrokontrolera platformy STM. Jedną z~bardziej przyjaznych
+użytkowniki alternatywnych opcji do~korzystania z~Cube'a jest otwartoźródłowy projekt
+\textit{libopencm3}. Oferowane rozwiązania tejże biblioteki są~znacznie bardziej przejrzyste
+oraz lepiej udokumentowane. Z~jej pomocą można bezproblemowo zastąpić komunikację opartą na
+opisanym w~rozdziale \ref{sec:uart} pollingu przerwaniami systemowymi. Kolejnym aspektem
+stricte programistycznym jest zmiana sposobu alokacji używanych w~rozwiązaniu macierzy z
+dynamicznego na~statyczny. Przeniesienie wykonywania największej części obliczeń ze~sterty
+na stos poprawiłoby w~znaczny sposób wydajność napisanego programu.
 
-Drugą płaszczyzna jest związana z zakresem badanych funkcjonalności regulatora MPC. Warte
-rozważenia są w tym przypadku dwie możliwości rozwoju. Pierwsza z nich zakłada rozszerzenie
-możliwości pracy regulatora o model nieliniowy przy pomocy techniki linearyzacji. Pozwoliłoby
-to zweryfikować poprawność pracy zaimplementowanego algorytmu MPC na szerszej dziedzinie
+Drugą płaszczyzna jest związana z~zakresem badanych funkcjonalności regulatora MPC. Warte
+rozważenia są~w~tym przypadku dwie możliwości rozwoju. Pierwsza z~nich zakłada rozszerzenie
+możliwości pracy regulatora o~model nieliniowy przy pomocy techniki linearyzacji. Pozwoliłoby
+to zweryfikować poprawność pracy zaimplementowanego algorytmu MPC na~szerszej dziedzinie
 obiektów. Docelowym rozwiązaniem jest realizacja indetyfikacji obiektu oraz rozwiązywanie
 zadania optymalizacji przy nieznanym modelu obiektu. 

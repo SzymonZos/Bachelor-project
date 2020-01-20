@@ -1,25 +1,22 @@
-\section{Ogólny schemat programu} \label{sec:scheme}
-Przydałby się rysunek z przepływem informacji + jak działa STM w połączeniu z PC.
-
 \section{Szczegóły implementacji - STM} \label{sec:details-stm}
-Zdecydowano się na implementację części programowej w języku C++, zważywszy na jego benefity
-omówione w rozdziale \ref{sec:cpp}. W kolejnych podrozdziałach zaprezentowano szczegóły
-zaprogramowanego rozwiązania problemu. Omówiono także na przykładach zastosowane praktyki
-programistyczne wraz z możliwością ich rozwoju oraz usprawnienia działania. 
+Zdecydowano się na~implementację części programowej w~języku C++, zważywszy na~jego benefity
+omówione w~rozdziale \ref{sec:cpp}. W~kolejnych podrozdziałach zaprezentowano szczegóły
+zaprogramowanego rozwiązania problemu. Omówiono także na~przykładach zastosowane praktyki
+programistyczne wraz z~możliwością ich rozwoju oraz usprawnienia działania. 
 
 \subsection{Charakterystyczne cechy C++} \label{sec:cpp_details}
-W projekcie wykorzystano paradygmat programowania obiektowego ze względu na uproszczenie zarządzania
-dostępem do danych przez konkretne funkcje, a także w celu uporządkowania konkretnych rozwiązań.
-Dodatkowo takie podejście w łatwy sposób można rozszerzyć o nowe funkcjonalności. Nieodłącznym 
-aspektem programistycznym są testy jednostkowe, ponieważ pozwalają one na wczesne wykrycie błędów
-danego oprogramowania. Implementacja obiektowości znacznie ułatwia testowanie kodu napisanego w C++.
-W tym celu można posłużyć się np. otwartoźródłową biblioteką Googletest. Na listingu
-\ref{lst:header_example} zaprezentowano przykładowy plik nagłówkowy jednej z klas użytych w
-implementacji rozwiązania. Podziałem na pola i metody publiczne oraz prywatne zrealizowano
-postulat hermetyzacji danych. Do pola \textit{storage} spoza klasy można odwołać się tylko poprzez
+W projekcie wykorzystano paradygmat programowania obiektowego ze~względu na~uproszczenie zarządzania
+dostępem do~danych przez konkretne funkcje, a~także w~celu uporządkowania konkretnych rozwiązań.
+Dodatkowo takie podejście w~łatwy sposób można rozszerzyć o~nowe funkcjonalności. Nieodłącznym 
+aspektem programistycznym są~testy jednostkowe, ponieważ pozwalają one na~wczesne wykrycie błędów
+danego oprogramowania. Implementacja obiektowości znacznie ułatwia testowanie kodu napisanego w~C++.
+W tym celu można posłużyć się np. otwartoźródłową biblioteką Googletest. Na~listingu
+\ref{lst:header_example} zaprezentowano przykładowy plik nagłówkowy jednej z~klas użytych w~implementacji
+rozwiązania. Podziałem na~pola i~metody publiczne oraz prywatne zrealizowano
+postulat hermetyzacji danych. Do~pola \textit{storage} spoza klasy można odwołać się tylko poprzez
 adekwatną metodę \textit{Get}. Dzięki takiemu rozwiązaniu uniknięto niepożądanych zmian zawartości
-tego pola poprzez metody nienależące do klasy \textit{DataParser}. Dodatkową organizację i porządek
-w zrealizowanym projekcie zapewniło użycie przestrzeni nazw (namespace). 
+tego pola poprzez metody nienależące do~klasy \textit{DataParser}. Dodatkową organizację i~porządek
+w zrealizowanym projekcie zapewniło użycie przestrzeni nazw (namespace). \cite{cpp_bjarne}
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 #ifndef MPC_STM_DATAPARSER_HPP
@@ -57,15 +54,16 @@ namespace Utils {
 \label{lst:header_example}
 \end{listing}
 
-Na listingu \ref{lst:source_example} przedstawiono plik źródłowy korespondujący z plikiem
-nagłówkowym klasy \textit{DataParser}. Rozdzielenie deklaracji i definicji pól oraz metod umożliwia
-odwołanie się do tych publicznych poza zakresem danej klasy poprzez włączenie odpowiedniego 
-pliku nagłówkowego. W celu zapewnienia bardziej elastycznego sposobu identyfikacji odebranych
-danych posłużono się omówionymi w rozdziale \ref{sec:regex} wyrażeniami regularnymi. Zastosowanie
-wyszukiwania kluczowych wartości w przeprowadzaniu analizy odebranej wiadomości umożliwia
+Na listingu \ref{lst:source_example} przedstawiono plik źródłowy korespondujący z~plikiem
+nagłówkowym klasy \textit{DataParser}. Rozdzielenie deklaracji i~definicji pól oraz metod umożliwia
+odwołanie się do~tych publicznych poza zakresem danej klasy poprzez włączenie odpowiedniego 
+pliku nagłówkowego. W~celu zapewnienia bardziej elastycznego sposobu identyfikacji odebranych
+danych posłużono się omówionymi w~rozdziale \ref{sec:regex} wyrażeniami regularnymi. Zastosowanie
+wyszukiwania kluczowych wartości w~przeprowadzaniu analizy odebranej wiadomości umożliwia
 przyszłą modyfikację tychże komunikatów. Aby uprościć implementację biblioteki \textit{<regex>},
-zdecydowano się na wykorzystanie STLa. Stało się to możliwe dzięki pokaźnemu, jak na systemy
+zdecydowano się na~wykorzystanie STLa. Stało się to~możliwe dzięki pokaźnemu, jak na~systemy
 wbudowane, rozmiarowi pamięci flash platformy Nucleo. Całość została zrealizowana jako maszyna stanów.
+\cite{cpp_bjarne}
 
 \begin{listing}[p]
 \centering
@@ -114,15 +112,15 @@ void Utils::DataParser::ClearStorage() {
 \label{lst:source_example}
 \end{listing}
 
-W celu lepszego dostosowania aplikacji do standardu języka C++ postanowiono zastosować jeden z wzorców
-projektowych, a mianowicie Singleton. Przykład implementacji pokazano na listingach \ref{lst:singleton_hpp}
-oraz \ref{lst:singleton_cpp}. Zdecydowano się na statyczną wersję tego wzorca ze względu na bezpieczeństwo
-w poprawnym funkcjonowaniu procesów. Rozwiązanie proponowane za pośrednictwem gotowego przykładu użycia
-interferjsu biblioteki HAL jest bardzo niebezpieczne z punktu widzenia dostępu do danych. Mianowicie, po
-inicjalizacji urządzeń peryferyjnych korzysta się w owym przykładzie z jednej struktury, która jest zmienną
-globalną. Przykład ten pokazuje, że rozwiązania tej konkretnej biblioteki nie należą do optymalnych.
-Z tego powodu postanowiono stworzyć osobną klasę, która powinna być inicjalizowana tylko raz. W takim
-rozwiązaniu problemu Singleton jest dobrym pomysłem na poprawę jakości kodu.
+W celu lepszego dostosowania aplikacji do~standardu języka C++ postanowiono zastosować jeden z~wzorców
+projektowych, a~mianowicie Singleton. Przykład implementacji pokazano na~listingach \ref{lst:singleton_hpp}
+oraz \ref{lst:singleton_cpp}. Zdecydowano się na~statyczną wersję tego wzorca ze~względu na~bezpieczeństwo
+w poprawnym funkcjonowaniu procesów. Rozwiązanie proponowane za~pośrednictwem gotowego przykładu użycia
+interferjsu biblioteki HAL jest bardzo niebezpieczne z~punktu widzenia dostępu do~danych. Mianowicie, po
+inicjalizacji urządzeń peryferyjnych korzysta się w~owym przykładzie z~jednej struktury, która jest zmienną
+globalną. Przykład ten pokazuje, że~rozwiązania tej konkretnej biblioteki nie należą do~optymalnych.
+Z tego powodu postanowiono stworzyć osobną klasę, która powinna być inicjalizowana tylko raz. W~takim
+rozwiązaniu problemu Singleton jest dobrym pomysłem na~poprawę jakości kodu. \cite{cpp_bjarne}
 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
@@ -154,14 +152,14 @@ HAL::Peripherals& HAL::Peripherals::GetInstance() {
 \end{listing}
 
 \subsection{Komunikacja} \label{sec:uart}
-W implementacji komunikacji po stronie platformy STM wykorzystano uniwersalny asynchroniczny
-nadajnik-odbiornik (UART). Jest to układ scalony, który wykorzystuje się w celu odbierania i przesyłania
-informacji poprzez port szeregowy. W tym celu wykorzystano gotowe, wysokopoziomowe rozwiązania
+W implementacji komunikacji po~stronie platformy STM wykorzystano uniwersalny asynchroniczny
+nadajnik-odbiornik (UART). Jest to~układ scalony, który wykorzystuje się w~celu odbierania i~przesyłania
+informacji poprzez port szeregowy. W~tym celu wykorzystano gotowe, wysokopoziomowe rozwiązania
 biblioteki HAL. Aby możliwe było wysłanie nowych parametrów regulatora oraz układu wykorzystano wspomniany
-w rozdziale \ref{sec:stm} programowalny przycisk dostępny dla użytkownika. Postanowiono zastosować do tego
-celu jedno z systemowych przerwań wraz z wywołaniem zwrotnym widocznym na listingu \ref{lst:callback_cpp}.
-Taki sposób rozwiązania problemu pozwolił na wyeliminowanie zjawiska odpytywania (pollingu). W oczekiwaniu
-na interakcję użytkownika, procesor systematycznie nie sprawdza danego rejestru.
+w rozdziale \ref{sec:stm} programowalny przycisk dostępny dla użytkownika. Postanowiono zastosować do~tego
+celu jedno z~systemowych przerwań wraz z~wywołaniem zwrotnym widocznym na~listingu \ref{lst:callback_cpp}.
+Taki sposób rozwiązania problemu pozwolił na~wyeliminowanie zjawiska odpytywania (pollingu). W~oczekiwaniu
+na interakcję użytkownika, procesor systematycznie nie sprawdza danego rejestru. \cite{forbot}
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
@@ -175,19 +173,19 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 \label{lst:callback_cpp}
 \end{listing}
 
-W przypadku implementacji funkcji stricte odpowiedzialnych za komunikację posłużono się wcześniej
-wspomnianym pollingiem. Skorzystanie z obsługi przerwań w tym przypadku nie było możliwe zważywszy na
-niewłaściwą interakcję między tym generowanym po wciśnięciu przecisku a tymi po wysłaniu czy też odebraniu
-wiadomości. Takie podejście prowadzi do nadmiernego zużycia zasobów procesora, jednakże umożliwiło ono 
-tymczasowe rozwiązanie napotkanego problemu. Zgodnie z przyjętym paradygmatem programowania obiektowego
+W przypadku implementacji funkcji stricte odpowiedzialnych za~komunikację posłużono się wcześniej
+wspomnianym pollingiem. Skorzystanie z~obsługi przerwań w~tym przypadku nie było możliwe zważywszy na
+niewłaściwą interakcję między tym generowanym po~wciśnięciu przecisku a~tymi po~wysłaniu czy też odebraniu
+wiadomości. Takie podejście prowadzi do~nadmiernego zużycia zasobów procesora, jednakże umożliwiło ono 
+tymczasowe rozwiązanie napotkanego problemu. Zgodnie z~przyjętym paradygmatem programowania obiektowego
 napisano metody opakowujące biblioteczne funkcje obsługujące UARTa. Wspomniane funkcjonalności
-zaprezentowano na listingach \ref{lst:sendstring_cpp} oraz \ref{lst:receivestring_cpp}. Implementacja
-wysyłania wiadomości okazała się prostolinijna w przeciwieństwie do odbioru wiadomości. Problemu
+zaprezentowano na~listingach \ref{lst:sendstring_cpp} oraz \ref{lst:receivestring_cpp}. Implementacja
+wysyłania wiadomości okazała się prostolinijna w~przeciwieństwie do~odbioru wiadomości. Problemu
 przysporzył brak możliwości skutecznego nawiązania połączenia bez znajomości długości przychodzącego
-łańcucha znaków. Postanowiono więc wysyłać dwie wiadomości - pierwszą o z góry ustalonym rozmiarze
-1 bajta zawierającą informację o długości następnej. Takie ograniczenie poskutkowało zmniejszeniem
-maksymalnej pojemności wiadomości do 255 bajtów, co jest wystarczającą wielkością do użycia w celach
-projektowych. Istnieje możliwość zwiększenia tego limitu poprzez ustalenie innej liczby bajtów w pierwszej
+łańcucha znaków. Postanowiono więc wysyłać dwie wiadomości - pierwszą o~z~góry ustalonym rozmiarze
+1 bajta zawierającą informację o~długości następnej. Takie ograniczenie poskutkowało zmniejszeniem
+maksymalnej pojemności wiadomości do~255 bajtów, co~jest wystarczającą wielkością do~użycia w~celach
+projektowych. Istnieje możliwość zwiększenia tego limitu poprzez ustalenie innej liczby bajtów w~pierwszej
 przychodzącej wiadomości. 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
@@ -213,22 +211,22 @@ void HAL::Peripherals::ReceiveString(const uint8_t* string, uint16_t timeout) {
 \end{listing}
 
 \subsection{Klasa macierzy} \label{sec:matrices}
-Implementacja algorytmu MPC wymaga dużej ilości operacji na macierzach. W standardowej bibliotece języka
-programowania C++ nie są dostępne żadne kontenery ułatawiające przeprowadzenie takich działań. Dostępne
-są wprawdzie gotowe rozwiązania w postaci zewnętrznych bibliotek, np. \textit{Eigen}. Jednakże nie
-zdecydowano się na włączenie żadnej z nich do projektu zważywszy na ograniczone zasoby platformy STM.
-Postanowiono więc zaimplementować własne rozwiązanie będące klasą opakowującą na dynamicznie alokowane
-tablice wskaźników. Na listingu \ref{lst:matrix_hpp} przedstawiono fragment pliku nagłówkowego omawianej
-solucji. Przedstawiono w nim najważniejsze metody będące niezbędne do poprawnego zaimplementowania 
-algorytmu sterowania predykcyjnego. Skorzystano także z możliwości przeciążenia operatorów, którą oferuje
-język C++. W ten sposób opakowano odpowiadające im metody i sprawiono, że używanie tych funkcjonalności
+Implementacja algorytmu MPC wymaga dużej ilości operacji na~macierzach. W~standardowej bibliotece języka
+programowania C++ nie są~dostępne żadne kontenery ułatawiające przeprowadzenie takich działań. Dostępne
+są wprawdzie gotowe rozwiązania w~postaci zewnętrznych bibliotek, np. \textit{Eigen}. Jednakże nie
+zdecydowano się na~włączenie żadnej z~nich do~projektu zważywszy na~ograniczone zasoby platformy STM.
+Postanowiono więc zaimplementować własne rozwiązanie będące klasą opakowującą na~dynamicznie alokowane
+tablice wskaźników. Na~listingu \ref{lst:matrix_hpp} przedstawiono fragment pliku nagłówkowego omawianej
+solucji. Przedstawiono w~nim najważniejsze metody będące niezbędne do~poprawnego zaimplementowania 
+algorytmu sterowania predykcyjnego. Skorzystano także z~możliwości przeciążenia operatorów, którą oferuje
+język C++. W~ten sposób opakowano odpowiadające im~metody i~sprawiono, że~używanie tych funkcjonalności
 jest bardziej przejrzyste dla użytkownika. Zaimplementowano także rekursywną metodę obliczania wyznacznika
-macierzy bazującą na rozwinięciu Laplace'a. Potrzebny okazał się także być algorytm odwracania macierzy.
-W tym celu posłużono się metodą polegającą na znalezieniu macierzy dopełnień algebraicznych. Pewną
+macierzy bazującą na~rozwinięciu Laplace'a. Potrzebny okazał się także być algorytm odwracania macierzy.
+W tym celu posłużono się metodą polegającą na~znalezieniu macierzy dopełnień algebraicznych. Pewną
 niedogodnością zaproponowanego rozwiązania jest użycie wyjątków, których obsługa jest domyślnie wyłączona
-w platformie STM. Ich negatywny wpływ na systemy wbudowane został omówiony w rozdziale \ref{sec:cpp}.
-Znalazły się one w projekcie, ponieważ ich zastosowanie znacznie ułatwiło debuggowanie testowej wersji
-algorytmu, która była sprawdzana na PC.  
+w platformie STM. Ich negatywny wpływ na~systemy wbudowane został omówiony w~rozdziale \ref{sec:cpp}.
+Znalazły się one w~projekcie, ponieważ ich zastosowanie znacznie ułatwiło debuggowanie testowej wersji
+algorytmu, która była sprawdzana na~PC.  
 \begin{listing}[p]
 \begin{minted}[linenos, breaklines]{cpp}
 #include ...
@@ -281,25 +279,25 @@ public:
 \end{listing}
 
 \subsection{Aglorytm} \label{sec:algorithm}
-W celu realizacji sterowania predykcyjnego posłużono się szybką metodą gradientu prostego. %tu musi być ten przypis
-Do poprawnego funkcjonowania tej metody potrzebne są następujące dane.
+W celu realizacji sterowania predykcyjnego posłużono się szybką metodą gradientu prostego.
+Do poprawnego funkcjonowania tej metody potrzebne są~następujące dane. \cite{gradient}
 \begin{itemize}
     \item Wektor stanów $x_k$.
     \item Początkowa wartość $v_0$ (przyjęto 0).
     \item Maksymalna liczba możliwych iteracji $i_{max}$.
-    \item Maksymalna wartość własna $L$ macierzy $H$, jak i minimalna $\mu$. 
+    \item Maksymalna wartość własna $L$ macierzy $H$, jak i~minimalna $\mu$. 
 \end{itemize}
 Poniżej zamieszczono kolejne kroki tego algorytmu.
 \begin{enumerate}
     \item Ustawienie stanu poczatkowego: $v_{old} = y$, $w = y$.
-    \item Obliczenie $v$ jako projekcji gradientowej z $w$ o kroku $1/L$.
-    \item Obliczenie $w = v + \frac{\sqrt{L} - \sqrt{\mu}}{\sqrt{L} + \sqrt{\mu}}(v - v_{old})$.
+    \item Obliczenie $v$ jako projekcji gradientowej z~$w$ o~kroku $1/L$.
+    \item Obliczenie $w = v~+ \frac{\sqrt{L} - \sqrt{\mu}}{\sqrt{L} + \sqrt{\mu}}(v - v_{old})$.
     \item Ustawienie $v_{old} = v$.
-    \item Powtórzenie algorytmu do osiągnięcia warunku stopu albo maksymalnej liczby iteracji.
+    \item Powtórzenie algorytmu do~osiągnięcia warunku stopu albo maksymalnej liczby iteracji.
     \item Zwrócenie otrzymanego sterowania $v$.  
 \end{enumerate}
 Na listingu \ref{lst:gradient_cpp} znajduje się implementacja szybkiej metody gradientowej, a
-listing \ref{lst:step_cpp} zawiera sposób, w jaki zrealizowano obliczenie kolejnego kroku w algorytmie.
+listing \ref{lst:step_cpp} zawiera sposób, w~jaki zrealizowano obliczenie kolejnego kroku w~algorytmie.
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 double Control::MPC::FastGradientMethod(const std::string& msg) {
@@ -344,12 +342,12 @@ void Control::MPC::CalculateProjectedGradientStep() {
 \label{lst:step_cpp}
 \end{listing}
     
-W celu obliczenia minimalnej i maksymalnej wartości własnej macierzy $H$ zastosowano iteracyjną
-metodę potęgową. Jej implementacja znajduje się na listingu \ref{lst:powermethod_cpp}. Algorytm
-ten umożliwia znalezienie maksymalnej, co do modułu, wartości własnej danej macierzy. Wartość
+W celu obliczenia minimalnej i~maksymalnej wartości własnej macierzy $H$ zastosowano iteracyjną
+metodę potęgową. Jej implementacja znajduje się na~listingu \ref{lst:powermethod_cpp}. Algorytm
+ten umożliwia znalezienie maksymalnej, co~do~modułu, wartości własnej danej macierzy. Wartość
 minimalna może być obliczona poprzez znalezienie wartości maksymalnej macierzy odwrotnej. Metoda
-potęgowa została zastosowana ze względu na swoją prostotę, łatwość w implementacji oraz konieczność
-wyznaczcenia jedynie najbardziej skrajnych, co do modułu, wartości własnych danej macierzy. 
+potęgowa została zastosowana ze~względu na~swoją prostotę, łatwość w~implementacji oraz konieczność
+wyznaczcenia jedynie najbardziej skrajnych, co~do~modułu, wartości własnych danej macierzy. \cite{power}
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 double Utils::Misc::PowerMethod(const CMatrix& matrix, uint32_t maxIterations) {
@@ -377,10 +375,10 @@ double Utils::Misc::PowerMethod(const CMatrix& matrix, uint32_t maxIterations) {
 \label{lst:powermethod_cpp}
 \end{listing}
 
-W celu przetestowania zmian parametrów regulatora predykcyjnego w czasie wykonywania się programu
-konieczne okazało się zaimplementowanie nieobecnej w języku C++ funkcji realokacji pamięci
-dynamicznej. Posłużono się w tym celu tzw. obiektami funkcyjnymi. Na listingu
-\ref{lst:parameters_cpp} pokazano sposób, w jaki reinicjalizowane są parametry układu, jak i regulatora. 
+W celu przetestowania zmian parametrów regulatora predykcyjnego w~czasie wykonywania się programu
+konieczne okazało się zaimplementowanie nieobecnej w~języku C++ funkcji realokacji pamięci
+dynamicznej. Posłużono się w~tym celu tzw. obiektami funkcyjnymi. Na~listingu
+\ref{lst:parameters_cpp} pokazano sposób, w~jaki reinicjalizowane są~parametry układu, jak i~regulatora. 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 void Control::MPC::InitializeParameters(std::map<std::string, std::vector<double>> storage) {
@@ -420,8 +418,8 @@ void Control::MPC::InitializeParameters(std::map<std::string, std::vector<double
 \label{lst:parameters_cpp}
 \end{listing}
 
-W celu wyznaczenia wskazanych w rozdziale \ref{sec:qp} macierzy potrzebnych do rozwiązania
-problemu programowania kwadratowego zastosowano kod zaprezentowany na listingu \ref{lst:opt_cpp}.
+W celu wyznaczenia wskazanych w~rozdziale \ref{sec:qp} macierzy potrzebnych do~rozwiązania
+problemu programowania kwadratowego zastosowano kod zaprezentowany na~listingu \ref{lst:opt_cpp}.
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{cpp}
 void Control::MPC::CalculateOptimizationMatrices() {
@@ -454,12 +452,12 @@ void Control::MPC::CalculateOptimizationMatrices() {
 \end{listing}
 
 \section{Szczegóły implementacji - PC} \label{sec:details-pc}
-Przygotowany do testowania algorytmu MPC skrypt w języku programowania Python składa się z trzech
-funkcjonalnych części. Pierwsza z nich została przedstawiona na listingu \ref{lst:init_py}. Sekcja
-ta odpowiada za inicicjalizację parametrów, które zostaną wysłane do platformy STM oraz użyte
-na potrzeby wyliczenia kolejnych wartości wyjściowych układu. Zmienne przechowywane są w kolekcji
-standardowej biblioteki Pythona - słowniku. Zabieg taki umożliwił odwołanie się do konkretnych
-parametrów za pomocą klucza stanowiącego nazwę danej wartości. 
+Przygotowany do~testowania algorytmu MPC skrypt w~języku programowania Python składa się z~trzech
+funkcjonalnych części. Pierwsza z~nich została przedstawiona na~listingu \ref{lst:init_py}. Sekcja
+ta odpowiada za~inicicjalizację parametrów, które zostaną wysłane do~platformy STM oraz użyte
+na potrzeby wyliczenia kolejnych wartości wyjściowych układu. Zmienne przechowywane są~w~kolekcji
+standardowej biblioteki Pythona - słowniku. Zabieg taki umożliwił odwołanie się do~konkretnych
+parametrów za~pomocą klucza stanowiącego nazwę danej wartości. 
 
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{python}
@@ -486,9 +484,9 @@ timer = []
 \label{lst:init_py}
 \end{listing}
 
-Kolejna sekcja odpowiedzialna jest za główną część skryptu, a mianowicie komunikację z
+Kolejna sekcja odpowiedzialna jest za~główną część skryptu, a~mianowicie komunikację z
 mikrokontrolerem oraz obliczanie kolejnych wartości wyjściowych układu. Przesyłanie wiadomości
-zostało zrealizowane za pomocą interfejsu biblioteki \textit{Serial}. Na listingu \ref{lst:serial_py}
+zostało zrealizowane za~pomocą interfejsu biblioteki \textit{Serial}. Na~listingu \ref{lst:serial_py}
 zaprezentowano proponowaną implementację.
 
 \begin{listing}[htb]
@@ -519,7 +517,7 @@ with serial.Serial('COM3', 115200, timeout=20) as ser:
 \label{lst:serial_py}
 \end{listing}
 
-Na listingu \ref{lst:write_py} przedstawiono część skryptu odpowiedzialną za zapisywanie danych.
+Na listingu \ref{lst:write_py} przedstawiono część skryptu odpowiedzialną za~zapisywanie danych.
 \begin{listing}[htb]
 \begin{minted}[linenos, breaklines]{python}
 _, fig = plt.subplots(2, 1, figsize=(6.4, 9.6))
@@ -542,8 +540,8 @@ with open('log.txt', 'a') as logger:
 \end{listing}
 
 \section{Problemy napotkane podczas realizacji} \label{sec:problems}
-Podczas realizacji implementacji algorytmu MPC napotkano na kilka trudności, które wynikały
-głównie z ograniczeń biblioteki HAL. Problemy te opisano w poprzednich rozdziałach.
-W celu sprawnego testowania algorytmu podjęto decyzję, aby obliczenia na macierzach przeprowadzać
-na stercie. Rozwiązanie to znacznie ułatwiło pracę nad projektem, jednak obarczone było 
+Podczas realizacji implementacji algorytmu MPC napotkano na~kilka trudności, które wynikały
+głównie z~ograniczeń biblioteki HAL. Problemy te~opisano w~poprzednich rozdziałach.
+W celu sprawnego testowania algorytmu podjęto decyzję, aby obliczenia na~macierzach przeprowadzać
+na stercie. Rozwiązanie to~znacznie ułatwiło pracę nad projektem, jednak obarczone było 
 sporą utratą wydajności. 
